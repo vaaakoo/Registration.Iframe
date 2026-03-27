@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\PayUnicard.Registration.Iframe.Client.csproj",
+        "Action": "Start",
+        "DebugTarget": "PayUnicard.Registration.Iframe.Client"
+      }
+    ]
+  }
+]

@@ -1,0 +1,109 @@
+@page "/test-registration"
+@rendermode InteractiveWebAssembly
+@inject IUserService UserService
+@inject IOtpService OtpService
+@inject IPresentationService PresentationService
+@inject NavigationManager Navigation
+
+<div class="registration-container">
+    <div class="card shadow-lg p-5">
+        <h2 class="text-center mb-4">Registration Flow Demo (MOCK)</h2>
+
+        @if (currentStep == 1)
+        {
+            <div class="step">
+                <h4>Step 1: Account Information</h4>
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" @bind="model.UserName" @onblur="OnUsernameBlur" placeholder="Enter 'taken' to see error" />
+                    @if (usernameError) { <p class="text-danger">Username is already taken</p> }
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control" @bind="model.Phone" placeholder="995..." />
+                </div>
+                <button class="btn btn-primary w-100" @onclick="GoToOtp">Next: Verify Phone</button>
+            </div>
+        }
+        else if (currentStep == 2)
+        {
+            <div class="step">
+                <h4>Step 2: OTP Verification</h4>
+                <p>An OTP has been sent to @model.Phone (Mock: use 1234)</p>
+                <div class="mb-3">
+                    <label class="form-label">Enter OTP</label>
+                    <input type="text" class="form-control" @bind="otpCode" />
+                </div>
+                @if (otpError) { <p class="text-danger">Invalid OTP. Use 1234 for demo.</p> }
+                <button class="btn btn-primary w-100" @onclick="VerifyOtp">Verify & Complete Step 1</button>
+            </div>
+        }
+        else if (currentStep == 3)
+        {
+            <div class="step text-center">
+                <div class="success-icon mb-3">✅</div>
+                <h4>Pre-Registration Successful!</h4>
+                <p>Redirecting to KYC Identification...</p>
+                <button class="btn btn-success w-100" @onclick="StartKyc">Proceed to Identification</button>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .registration-container {
+        max-width: 500px;
+        margin: 50px auto;
+        font-family: 'Inter', sans-serif;
+    }
+    .success-icon {
+        font-size: 3rem;
+    }
+</style>
+
+@code {
+    private int currentStep = 1;
+    private UserPreRegistrationRequest model = new();
+    private string otpCode = "";
+    private bool usernameError = false;
+    private bool otpError = false;
+
+    private async Task OnUsernameBlur()
+    {
+        if (string.IsNullOrWhiteSpace(model.UserName)) return;
+        var resp = await UserService.CheckUserPreRegistrationAsync(new CheckUserRequest { UserName = model.UserName });
+        usernameError = resp?.UserNameExists ?? false;
+    }
+
+    private async Task GoToOtp()
+    {
+        if (usernameError) return;
+        
+        // Mock sending OTP
+        await OtpService.SendPhoneOtpAsync(new SendOtpRequest { Phone = model.Phone }, "mock-recaptcha-token");
+        currentStep = 2;
+    }
+
+    private async Task VerifyOtp()
+    {
+        var resp = await OtpService.SubmitPhoneOtpAsync(new SubmitOtpRequest { Otp = otpCode, Phone = model.Phone });
+        if (!string.IsNullOrEmpty(resp?.OtpGuid))
+        {
+            model.OtpGuid = resp.OtpGuid;
+            // Mock finalizing pre-registration
+            await UserService.UserPreRegistrationAsync(model);
+            currentStep = 3;
+            otpError = false;
+        }
+        else
+        {
+            otpError = true;
+        }
+    }
+
+    private void StartKyc()
+    {
+        // For now, just show first phase works
+        Console.WriteLine("Starting Identification phase...");
+    }
+}

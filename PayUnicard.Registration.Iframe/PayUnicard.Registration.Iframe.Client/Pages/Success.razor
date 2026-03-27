@@ -1,0 +1,39 @@
+@page "/success"
+@rendermode InteractiveWebAssembly
+
+<div class="reg-page">
+    <div class="reg-card" style="text-align:center">
+
+        <div class="reg-logo" style="justify-content:center">
+            <div class="reg-logo-icon">P</div>
+            <div class="reg-logo-name">Registration</div>
+        </div>
+
+        <div class="success-screen">
+            <div class="success-icon">✓</div>
+            <h3>Application Submitted!</h3>
+            <p>
+                Your identity verification has been submitted for review.<br />
+                You will receive a notification once it is approved.
+            </p>
+
+            <div class="alert alert-info" style="text-align:left">
+                📋 <strong>What happens next?</strong><br />
+                <ul style="margin:.5rem 0 0 1rem; padding:0; font-size:.85rem">
+                    <li>Our compliance team will review your documents</li>
+                    <li>This usually takes 1–2 business days</li>
+                    <li>You will receive an email/SMS with the result</li>
+                    <li>Once approved, your card will be issued</li>
+                </ul>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:.65rem; margin-top:1.25rem">
+                <button class="btn btn-primary" onclick="window.parent.postMessage({type:'REGISTRATION_COMPLETE', status:'submitted'}, '*')">
+                    ✓ Close & Continue
+                </button>
+                <a href="/" style="color:var(--text-muted); font-size:.85rem; text-decoration:none">← Start new registration</a>
+            </div>
+        </div>
+
+    </div>
+</div>

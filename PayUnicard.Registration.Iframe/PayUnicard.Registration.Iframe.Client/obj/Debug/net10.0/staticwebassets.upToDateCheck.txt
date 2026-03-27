@@ -1,0 +1,4 @@
+wwwroot\appsettings.Development.json
+wwwroot\appsettings.json
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\wwwroot\appsettings.Development.json
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\wwwroot\appsettings.json

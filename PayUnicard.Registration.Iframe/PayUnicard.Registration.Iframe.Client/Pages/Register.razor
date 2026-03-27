@@ -1,0 +1,342 @@
+@page "/"
+@rendermode InteractiveWebAssembly
+@implements IDisposable
+@inject IUserService UserService
+@inject IOtpService OtpService
+@inject IPresentationService PresentationService
+@inject NavigationManager Nav
+@inject PayUnicard.Registration.Iframe.Client.Services.RegistrationState State
+
+<div class="reg-page">
+    <div class="reg-card">
+
+        <!-- Logo -->
+        <div class="reg-logo">
+            <div class="reg-logo-icon">P</div>
+            <div class="reg-logo-name">Registration</div>
+        </div>
+
+        @if (step == 1)
+        {
+            <!-- Step 1: Account Info -->
+            <h1 class="reg-title">Create Account</h1>
+            <p class="reg-subtitle">Fill in your details to get started — it only takes a minute.</p>
+
+            <!-- Stepper -->
+            <div class="step-indicator">
+                <div class="step-dot active">1</div>
+                <div class="step-line"></div>
+                <div class="step-dot">2</div>
+                <div class="step-line"></div>
+                <div class="step-dot">3</div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">⚠ @errorMessage</div>
+            }
+
+            <!-- Name row -->
+            <div style="display:flex; gap:.65rem;">
+                <div class="field" style="flex:1">
+                    <label>First Name</label>
+                    <input placeholder="Giorgi" @bind="model.Name" @bind:event="oninput" class="@NameClass" />
+                </div>
+                <div class="field" style="flex:1">
+                    <label>Last Name</label>
+                    <input placeholder="Beridze" @bind="model.Surname" @bind:event="oninput" />
+                </div>
+            </div>
+
+            <!-- Username -->
+            <div class="field">
+                <label>Username (Email)</label>
+                <input type="email" placeholder="giorgi@example.com"
+                       @bind="model.UserName" @bind:event="oninput"
+                       @onblur="CheckUsername"
+                       class="@UsernameClass" />
+                @if (usernameError)
+                {
+                    <div class="field-error">✗ This username is already taken</div>
+                }
+                else if (usernameOk)
+                {
+                    <div class="field-hint" style="color: var(--success)">✓ Username available</div>
+                }
+            </div>
+
+            <!-- Phone -->
+            <div class="field">
+                <label>Phone Number</label>
+                <div class="phone-row">
+                    <select @bind="selectedCountryCode">
+                        <option value="+995">🇬🇪 +995</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+49">🇩🇪 +49</option>
+                    </select>
+                    <input type="tel" placeholder="555 123 456" @bind="phoneNumber" @bind:event="oninput" />
+                </div>
+                @if (phoneError) { <div class="field-error">✗ This phone is already registered</div> }
+            </div>
+
+            <!-- Password -->
+            <div class="field">
+                <label>Password</label>
+                <input type="password" placeholder="Min 8 characters"
+                       value="@model.Password"
+                       @oninput="CheckPasswordStrength" />
+                <div class="password-strength">
+                    <div class="strength-bar"><div class="strength-fill strength-@strengthLevel"></div></div>
+                    <div class="strength-label">@strengthLabel</div>
+                </div>
+            </div>
+
+            <!-- Personal ID -->
+            <div class="field">
+                <label>Personal ID</label>
+                <input placeholder="11-digit ID number"
+                       @bind="model.PersonalId" @bind:event="oninput"
+                       @onblur="CheckPersonalId"
+                       class="@PersonalIdClass" />
+                @if (personalIdError) { <div class="field-error">✗ This ID is already registered</div> }
+            </div>
+
+            <!-- Terms -->
+            <div style="display:flex; align-items:flex-start; gap:.5rem; margin-bottom:1.25rem; font-size:.85rem; color:var(--text-muted);">
+                <input type="checkbox" id="terms" @bind="termsAccepted" style="margin-top:2px;" />
+                <label for="terms">I agree to the <a href="#" style="color:var(--primary)">Terms of Service</a> and <a href="#" style="color:var(--primary)">Privacy Policy</a></label>
+            </div>
+
+            <button class="btn btn-primary" @onclick="GoToOtp" disabled="@(!CanProceed)">
+                @if (loading) { <span class="spinner"></span> }
+                Continue →
+            </button>
+
+            <p class="bottom-link">Already have an account? <a href="#" style="color:var(--primary)">Sign in</a></p>
+        }
+
+        else if (step == 2)
+        {
+            <!-- Step 2: OTP Sent -->
+            <h1 class="reg-title">Verify Your Phone</h1>
+            <p class="reg-subtitle">We sent a 4-digit code to <strong>@model.Phone</strong></p>
+
+            <div class="step-indicator">
+                <div class="step-dot done">✓</div>
+                <div class="step-line done"></div>
+                <div class="step-dot active">2</div>
+                <div class="step-line"></div>
+                <div class="step-dot">3</div>
+            </div>
+
+            <div class="alert alert-info">
+                🔐 <strong>Mock mode:</strong> use code <code>1234</code>
+            </div>
+
+            <!-- 4-digit OTP input -->
+            <div class="otp-row">
+                @for (int i = 0; i < 4; i++)
+                {
+                    var idx = i;
+                    <input maxlength="1" type="text" inputmode="numeric" id="otp-@idx"
+                           value="@otpDigits[idx]"
+                           @oninput="e => OnOtpDigit(idx, e)" />
+                }
+            </div>
+
+            <div class="otp-timer">
+                @if (secondsLeft > 0)
+                {
+                    <span>Resend in <span>@secondsLeft s</span></span>
+                }
+                else
+                {
+                    <button class="btn-link" @onclick="ResendOtp">Resend code</button>
+                }
+            </div>
+
+            @if (otpError) { <div class="alert alert-danger">✗ Invalid code. Try again.</div> }
+
+            <button class="btn btn-primary" @onclick="VerifyOtp" disabled="@(otpDigits.Any(d => string.IsNullOrEmpty(d)) || loading)">
+                @if (loading) { <span class="spinner"></span> }
+                Verify Code
+            </button>
+        }
+
+        else if (step == 3)
+        {
+            <!-- Step 3: Success -->
+            <div class="success-screen">
+                <div class="success-icon">✓</div>
+                <h3>Account Created!</h3>
+                <p>Your account has been successfully created. You can now continue to identity verification and card activation.</p>
+                <div class="alert alert-success" style="text-align:left">
+                    ✓ <strong>@model.UserName</strong> is registered
+                </div>
+                <button class="btn btn-primary" @onclick="GoToIdentification">
+                    Continue to Verification →
+                </button>
+                <div class="divider"></div>
+                <p class="bottom-link" style="font-size:.8rem;">You will complete KYC and financial details on the next step.</p>
+            </div>
+        }
+
+    </div>
+</div>
+
+<!-- OTP Modal (hidden, using inline step instead) -->
+
+@code {
+    private UserPreRegistrationRequest model = new();
+    private int step = 1;
+    private bool loading = false;
+    private string errorMessage = "";
+
+    // ── Step 1 ──
+    private string selectedCountryCode = "+995";
+    private string phoneNumber = "";
+    private bool usernameError = false;
+    private bool usernameOk = false;
+    private bool phoneError = false;
+    private bool personalIdError = false;
+    private bool termsAccepted = false;
+    private int strengthLevel = 0;
+    private string strengthLabel = "";
+
+    // ── Step 2 ──
+    private string[] otpDigits = new string[4];
+    private bool otpError = false;
+    private int secondsLeft = 60;
+    private System.Threading.Timer? countdownTimer;
+
+    // ── Computed ──
+    private string NameClass => string.IsNullOrWhiteSpace(model.Name) ? "" : "success";
+    private string UsernameClass => usernameError ? "error" : usernameOk ? "success" : "";
+    private string PersonalIdClass => personalIdError ? "error" : "";
+
+    private bool CanProceed =>
+        !string.IsNullOrWhiteSpace(model.Name) &&
+        !string.IsNullOrWhiteSpace(model.Surname) &&
+        !string.IsNullOrWhiteSpace(model.UserName) &&
+        !usernameError &&
+        !string.IsNullOrWhiteSpace(phoneNumber) &&
+        !phoneError &&
+        strengthLevel >= 2 &&
+        !string.IsNullOrWhiteSpace(model.PersonalId) &&
+        !personalIdError &&
+        termsAccepted;
+
+    // ── Step 1: Duplicate checks ──────────────────────────────────────────
+    private async Task CheckUsername()
+    {
+        if (string.IsNullOrWhiteSpace(model.UserName)) return;
+        var res = await UserService.CheckUserPreRegistrationAsync(new CheckUserRequest { UserName = model.UserName });
+        usernameError = res?.UserNameExists == true;
+        usernameOk = !usernameError;
+    }
+
+    private async Task CheckPersonalId()
+    {
+        if (string.IsNullOrWhiteSpace(model.PersonalId)) return;
+        var res = await UserService.CheckUserPreRegistrationAsync(new CheckUserRequest { PersonalID = model.PersonalId });
+        personalIdError = res?.PersonalIDExists == true;
+    }
+
+    private void CheckPasswordStrength(ChangeEventArgs e)
+    {
+        var pw = e.Value?.ToString() ?? "";
+        model.Password = pw;
+        int score = 0;
+        if (pw.Length >= 8) score++;
+        if (pw.Any(char.IsUpper)) score++;
+        if (pw.Any(char.IsDigit)) score++;
+        if (pw.Any(c => "!@#$%^&*".Contains(c))) score++;
+        strengthLevel = score;
+        strengthLabel = score switch { 0 => "", 1 => "Weak", 2 => "Fair", 3 => "Good", 4 => "Strong" , _ => "" };
+    }
+
+    // ── Step 1 → Step 2 ──────────────────────────────────────────────────
+    private async Task GoToOtp()
+    {
+        if (!CanProceed) return;
+        loading = true;
+        errorMessage = "";
+
+        model.Phone = selectedCountryCode.Replace("+", "") + phoneNumber;
+        model.PhoneCountryCode = selectedCountryCode.TrimStart('+');
+
+        // Check phone duplicate
+        var checkRes = await UserService.CheckUserPreRegistrationAsync(new CheckUserRequest { Phone = model.Phone });
+        if (checkRes?.PhoneExists == true)
+        {
+            phoneError = true;
+            loading = false;
+            return;
+        }
+
+        await OtpService.SendPhoneOtpAsync(new SendOtpRequest { Phone = model.Phone }, "mock-token");
+        StartCountdown();
+        step = 2;
+        loading = false;
+    }
+
+    // ── OTP digit input ───────────────────────────────────────────────────
+    private void OnOtpDigit(int index, ChangeEventArgs e)
+    {
+        var val = e.Value?.ToString() ?? "";
+        otpDigits[index] = val.Length > 0 ? val[^1].ToString() : "";
+        otpError = false;
+    }
+
+    // ── Resend OTP ────────────────────────────────────────────────────────
+    private async Task ResendOtp()
+    {
+        await OtpService.SendPhoneOtpAsync(new SendOtpRequest { Phone = model.Phone }, "mock-token");
+        StartCountdown();
+    }
+
+    private void StartCountdown()
+    {
+        secondsLeft = 60;
+        countdownTimer?.Dispose();
+        countdownTimer = new System.Threading.Timer(_ =>
+        {
+            if (secondsLeft > 0) secondsLeft--;
+            else countdownTimer?.Dispose();
+            InvokeAsync(StateHasChanged);
+        }, null, 1000, 1000);
+    }
+
+    // ── Step 2: Verify OTP ────────────────────────────────────────────────
+    private async Task VerifyOtp()
+    {
+        loading = true;
+        var otp = string.Concat(otpDigits);
+        var res = await OtpService.SubmitPhoneOtpAsync(new SubmitOtpRequest { Otp = otp, Phone = model.Phone });
+
+        if (!string.IsNullOrEmpty(res?.OtpGuid))
+        {
+            model.OtpGuid = res.OtpGuid;
+            var regRes = await UserService.UserPreRegistrationAsync(model);
+            if (regRes?.Success == true)
+            {
+                State.PreRegistration = model; // Store for next steps
+                countdownTimer?.Dispose();
+                step = 3;
+            }
+            else { errorMessage = "Registration failed. Please try again."; step = 1; }
+        }
+        else
+        {
+            otpError = true;
+        }
+        loading = false;
+    }
+
+    // ── Step 3 → Identification ───────────────────────────────────────────
+    private void GoToIdentification() => Nav.NavigateTo("/identification");
+
+    public void Dispose() => countdownTimer?.Dispose();
+}

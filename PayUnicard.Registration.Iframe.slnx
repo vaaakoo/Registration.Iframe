@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PayUnicard.Registration.Iframe/PayUnicard.Registration.Iframe.Client/PayUnicard.Registration.Iframe.Client.csproj" />
+  <Project Path="PayUnicard.Registration.Iframe/PayUnicard.Registration.Iframe/PayUnicard.Registration.Iframe.csproj" />
+</Solution>

@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "dgSpecHash": "suT4q7poatU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\blazored.localstorage\\4.5.0\\blazored.localstorage.4.5.0.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\fluentvalidation\\12.1.1\\fluentvalidation.12.1.1.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.5\\microsoft.aspnetcore.app.internal.assets.10.0.5.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly\\10.0.5\\microsoft.aspnetcore.components.webassembly.10.0.5.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly.server\\10.0.5\\microsoft.aspnetcore.components.webassembly.server.10.0.5.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\microsoft.dotnet.hotreload.webassembly.browser\\10.0.201\\microsoft.dotnet.hotreload.webassembly.browser.10.0.201.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\microsoft.extensions.http\\9.0.0\\microsoft.extensions.http.9.0.0.nupkg.sha512",
+    "C:\\Users\\v.Janikashvili\\.nuget\\packages\\microsoft.jsinterop.webassembly\\10.0.5\\microsoft.jsinterop.webassembly.10.0.5.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1510",
+      "level": "Warning",
+      "message": "PackageReference Microsoft.Extensions.Http will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "projectPath": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj",
+      "libraryId": "Microsoft.Extensions.Http",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
+}

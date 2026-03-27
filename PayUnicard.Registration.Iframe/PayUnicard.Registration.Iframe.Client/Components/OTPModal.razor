@@ -1,0 +1,19 @@
+﻿@if (Visible)
+{
+    <div class="modal">
+        <input @bind="Otp" placeholder="Enter OTP" />
+        <button @onclick="Submit">Verify</button>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<string> OnSubmit { get; set; }
+
+    private string Otp = "";
+
+    private async Task Submit()
+    {
+        await OnSubmit.InvokeAsync(Otp);
+    }
+}

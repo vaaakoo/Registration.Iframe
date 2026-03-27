@@ -1,0 +1,363 @@
+/* =============================================
+   PayUnicard Registration Iframe - Global CSS
+   Inter font loaded in App.razor
+   ============================================= */
+
+:root {
+    --primary:        #2563eb;
+    --primary-hover:  #1d4ed8;
+    --primary-light:  #eff6ff;
+    --success:        #16a34a;
+    --danger:         #dc2626;
+    --warning:        #d97706;
+    --text-main:      #0f172a;
+    --text-muted:     #64748b;
+    --bg:             #f1f5f9;
+    --border:         #e2e8f0;
+    --white:          #ffffff;
+    --shadow:         0 4px 24px rgba(15,23,42,0.10);
+    --radius:         0.75rem;
+    --radius-sm:      0.5rem;
+    --transition:     all 0.18s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Page wrapper ─────────────────────────────── */
+.reg-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+
+/* ── Card ─────────────────────────────────────── */
+.reg-card {
+    background: var(--white);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 460px;
+    padding: 2.5rem 2.25rem;
+    border: 1px solid var(--border);
+    animation: slideUp 0.35s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Logo / Header ────────────────────────────── */
+.reg-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.75rem;
+}
+
+.reg-logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+    border-radius: 0.65rem;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.1rem; font-weight: 700;
+    flex-shrink: 0;
+}
+
+.reg-logo-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+
+.reg-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+}
+
+.reg-subtitle {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 1.75rem;
+}
+
+/* ── Step indicator ───────────────────────────── */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2rem;
+}
+
+.step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.step-dot.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.step-dot.done {
+    background: var(--success);
+    color: white;
+}
+
+.step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    transition: var(--transition);
+}
+
+.step-line.done { background: var(--success); }
+
+/* ── Form fields ──────────────────────────────── */
+.field {
+    margin-bottom: 1.1rem;
+}
+
+.field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.01em;
+}
+
+.field input,
+.field select {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background: var(--white);
+    transition: var(--transition);
+    outline: none;
+    appearance: none;
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.field input.error { border-color: var(--danger); }
+.field input.success { border-color: var(--success); }
+
+.field-error {
+    font-size: 0.78rem;
+    color: var(--danger);
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.field-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+/* Phone row */
+.phone-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.phone-row select { width: 120px; flex-shrink: 0; }
+.phone-row input  { flex: 1; }
+
+/* ── Buttons ──────────────────────────────────── */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.4rem;
+    padding: 0.72rem 1.25rem;
+    border: none; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; transition: var(--transition);
+    text-decoration: none; white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    width: 100%;
+}
+
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-main);
+}
+
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+.btn-link {
+    background: none; border: none;
+    color: var(--primary); font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; padding: 0; text-decoration: underline;
+}
+
+/* ── OTP Modal ────────────────────────────────── */
+.modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.45);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 2.25rem;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(15,23,42,0.2);
+    animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.modal-box h3 {
+    font-size: 1.2rem; font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.modal-box p { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+
+/* OTP digits row */
+.otp-row {
+    display: flex; gap: 0.65rem;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+}
+
+.otp-row input {
+    width: 52px; height: 60px;
+    text-align: center;
+    font-size: 1.4rem; font-weight: 700;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    color: var(--text-main);
+    outline: none;
+    transition: var(--transition);
+}
+
+.otp-row input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+.otp-timer { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+.otp-timer span { color: var(--danger); font-weight: 700; }
+
+/* ── Alerts ───────────────────────────────────── */
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    display: flex; align-items: flex-start; gap: 0.5rem;
+}
+
+.alert-danger  { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert-info    { background: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+
+/* ── Loading spinner ──────────────────────────── */
+.spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Success screen ───────────────────────────── */
+.success-screen {
+    text-align: center;
+    padding: 1rem 0 0.5rem;
+}
+
+.success-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1.25rem;
+    animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+.success-screen h3 { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem; }
+.success-screen p  { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+
+/* ── Password strength ────────────────────────── */
+.password-strength { margin-top: 0.5rem; }
+.strength-bar { height: 4px; border-radius: 4px; background: var(--border); margin-bottom: 0.25rem; overflow: hidden; }
+.strength-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.strength-0 { width: 0%; }
+.strength-1 { width: 25%; background: var(--danger); }
+.strength-2 { width: 50%; background: var(--warning); }
+.strength-3 { width: 75%; background: #ca8a04; }
+.strength-4 { width: 100%; background: var(--success); }
+.strength-label { font-size: 0.76rem; color: var(--text-muted); }
+
+/* ── Divider ──────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+/* ── Existing user link ───────────────────────── */
+.bottom-link { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 1.25rem; }
+
+/* Blazor error boundary */
+.blazor-error-boundary {
+    background: #fef2f2; color: #991b1b; padding: 1rem;
+    border-radius: var(--radius); border: 1px solid #fecaca;
+    font-size: 0.875rem; margin: 1rem;
+}
