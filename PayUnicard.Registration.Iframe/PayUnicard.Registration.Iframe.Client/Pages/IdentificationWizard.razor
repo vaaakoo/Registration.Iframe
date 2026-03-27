@@ -1,482 +1,520 @@
 @page "/identification"
 @rendermode InteractiveWebAssembly
-@implements IDisposable
+@implements IAsyncDisposable
 @inject IKycService KycService
 @inject IUserService UserService
 @inject IPresentationService PresentationService
+@inject IIframeInteropService IframeInterop
+@inject IAppEnvironmentService Environment
 @inject NavigationManager Nav
 @inject PayUnicard.Registration.Iframe.Client.Services.RegistrationState State
 
 <div class="reg-page">
-    <div class="reg-card" style="max-width:520px">
-
-        <!-- Logo -->
+    <div class="reg-card reg-card-wide">
         <div class="reg-logo">
-            <div class="reg-logo-icon">P</div>
-            <div class="reg-logo-name">Identity Verification</div>
+            <img class="reg-logo-mark" src="/images/payunicard_en.svg" alt="PayUnicard" />
         </div>
 
-        <!-- 6-step wizard stepper -->
-        <div class="step-indicator" style="margin-bottom:1.75rem">
-            @for (int i = 1; i <= 6; i++)
-            {
-                var si = i;
-                <div class="step-dot @(wizardStep == si ? "active" : wizardStep > si ? "done" : "")">
-                    @(wizardStep > si ? "✓" : si.ToString())
-                </div>
-                @if (si < 6) { <div class="step-line @(wizardStep > si ? "done" : "")"></div> }
-            }
-        </div>
-
-        @if (!string.IsNullOrEmpty(errorMsg))
+        @if (!hasStarted)
         {
-            <div class="alert alert-danger">⚠ @errorMsg</div>
-        }
-
-        <!-- ─── STEP 1: Address ──────────────────────────────────────── -->
-        @if (wizardStep == 1)
-        {
-            <h2 class="reg-title" style="font-size:1.25rem">Address Information</h2>
-            <p class="reg-subtitle">Please provide your legal and actual address.</p>
-
-            <div style="font-size:.8rem; font-weight:700; color:var(--text-muted); letter-spacing:.06em; text-transform:uppercase; margin-bottom:.75rem">LEGAL ADDRESS</div>
-
-            <div class="field">
-                <label>Country</label>
-                <select @bind="legalCountry">
-                    <option value="">— Select country —</option>
-                    @foreach (var c in countries)
-                    {
-                        <option value="@c.CountryID">@c.CountryName</option>
-                    }
-                </select>
-            </div>
-            <div class="field">
-                <label>City</label>
-                <input placeholder="e.g. Tbilisi" @bind="legalCity" />
-            </div>
-            <div class="field">
-                <label>Street Address</label>
-                <input placeholder="e.g. Rustaveli Ave 12" @bind="legalAddress" />
-            </div>
-            <div class="field">
-                <label>Postal Code</label>
-                <input placeholder="e.g. 0108" @bind="legalPostal" />
-            </div>
-
-            <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:1rem; font-size:.875rem; color:var(--text-muted)">
-                <input type="checkbox" id="sameAddress" @bind="sameAsLegal" />
-                <label for="sameAddress" style="cursor:pointer">Actual address same as legal</label>
-            </div>
-
-            @if (!sameAsLegal)
-            {
-                <div style="font-size:.8rem; font-weight:700; color:var(--text-muted); letter-spacing:.06em; text-transform:uppercase; margin-bottom:.75rem">ACTUAL ADDRESS</div>
-                <div class="field">
-                    <label>Country</label>
-                    <select @bind="factCountry">
-                        <option value="">— Select country —</option>
-                        @foreach (var c in countries) { <option value="@c.CountryID">@c.CountryName</option> }
-                    </select>
+            <div class="intro-shell">
+                <div class="intro-card">
+                    <h1 class="reg-title reg-title-centered">Identification</h1>
+                    <p class="reg-subtitle reg-subtitle-centered">Before we continue, please prepare the documents required for visual identification.</p>
+                    <div class="intro-list">
+                        <div class="intro-item"><div class="intro-badge">5</div><div><strong>Around 5 minutes</strong><p>Please keep enough time to finish the identification process in one session.</p></div></div>
+                        <div class="intro-item"><div class="intro-badge">ID</div><div><strong>Prepare your document</strong><p>You can use an ID card, residence permit, or passport during verification.</p></div></div>
+                        <div class="intro-item"><div class="intro-badge">OK</div><div><strong>Camera and internet</strong><p>Use a stable internet connection and good lighting before you start.</p></div></div>
+                    </div>
                 </div>
-                <div class="field">
-                    <label>City</label>
-                    <input placeholder="e.g. Batumi" @bind="factCity" />
+                <div class="button-row intro-actions">
+                    <button class="btn btn-primary" type="button" @onclick="StartIdentificationAsync">Next</button>
                 </div>
-                <div class="field">
-                    <label>Street Address</label>
-                    <input placeholder="e.g. Chavchavadze St 5" @bind="factAddress" />
-                </div>
-            }
-
-            <button class="btn btn-primary" @onclick="NextStep" disabled="@(!CanGoStep1)">Next →</button>
-        }
-
-        <!-- ─── STEP 2: Employment ───────────────────────────────────── -->
-        else if (wizardStep == 2)
-        {
-            <h2 class="reg-title" style="font-size:1.25rem">Employment Details</h2>
-            <p class="reg-subtitle">Tell us about your employment status.</p>
-
-            <div class="field">
-                <label>Employment Status</label>
-                <select @bind="empStatus">
-                    <option value="">— Select status —</option>
-                    @foreach (var s in employmentStatuses)
-                    {
-                        <option value="@s.EmploymentStatusCode">@s.EmploymentStatus</option>
-                    }
-                </select>
-            </div>
-            <div class="field">
-                <label>Work Type</label>
-                <select @bind="workType">
-                    <option value="">— Select type —</option>
-                    @foreach (var w in workTypes)
-                    {
-                        <option value="@w.CustomerEmploymentTypeCode">@w.CustomerEmploymentType</option>
-                    }
-                </select>
-            </div>
-            <div class="field">
-                <label>Employer Name <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
-                <input placeholder="e.g. TBC Bank" @bind="employer" />
-            </div>
-            <div class="field">
-                <label>Position <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
-                <input placeholder="e.g. Senior Developer" @bind="workPosition" />
-            </div>
-
-            <div style="display:flex; gap:.65rem; margin-top:.5rem">
-                <button class="btn btn-outline" style="flex:1" @onclick="PrevStep">← Back</button>
-                <button class="btn btn-primary" style="flex:2" @onclick="NextStep" disabled="@(!CanGoStep2)">Next →</button>
             </div>
         }
-
-        <!-- ─── STEP 3: Financial Profile ────────────────────────────── -->
-        else if (wizardStep == 3)
+        else
         {
-            <h2 class="reg-title" style="font-size:1.25rem">Financial Profile</h2>
-            <p class="reg-subtitle">This information is required for compliance purposes.</p>
-
-            <div class="field">
-                <label>Expected Monthly Turnover</label>
-                <select @bind="expectedTurnover">
-                    <option value="">— Select range —</option>
-                    @foreach (var t in turnoverTypes)
+            <div class="wizard-shell">
+                <h1 class="reg-title wizard-title">Identification</h1>
+                <div class="wizard-step-header">
+                    @if (wizardStep > 1)
                     {
-                        <option value="@t.ExpectedTurnoverCode">@t.ExpectedTurnover</option>
+                        <button class="section-back" type="button" @onclick="PrevStep">Back</button>
                     }
-                </select>
-            </div>
+                    <div>
+                        <h2 class="wizard-step-title">@CurrentStepTitle</h2>
+                        <p class="wizard-step-copy">@CurrentStepSubtitle</p>
+                    </div>
+                </div>
 
-            <div class="field">
-                <label>Expected Annual Income</label>
-                <select @bind="annualIncome">
-                    <option value="">— Select range —</option>
-                    @foreach (var a in annualIncomes)
-                    {
-                        <option value="@a.ExpectedAnnualIncomeCode">@a.ExpectedAnnualIncomeCode</option>
-                    }
-                </select>
-            </div>
-
-            <div class="field">
-                <label>Purpose of Account Usage</label>
-                @foreach (var p in usagePurposes)
+                @if (Environment.IsMockMode)
                 {
-                    <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.35rem; font-size:.875rem">
-                        <input type="checkbox" id="purpose-@p.UsageID"
-                               checked="@selectedPurposes.Contains(p.UsageID)"
-                               @onchange="e => TogglePurpose(p.UsageID, (bool)(e.Value ?? false))" />
-                        <label for="purpose-@p.UsageID" style="cursor:pointer">@p.UsagePurposeText</label>
+                    <div class="alert alert-info">Development mode is enabled. KYC completion can be simulated locally.</div>
+                }
+                @if (!string.IsNullOrEmpty(errorMsg))
+                {
+                    <div class="alert alert-danger">@errorMsg</div>
+                }
+
+                @if (wizardStep == 1)
+                {
+                    <div class="wizard-content-shell">
+                        <div class="form-stack">
+                            <div class="field"><label for="legalCountry">Legal Country</label><select id="legalCountry" @bind="legalCountry"><option value="">Select country</option>@foreach (var country in countries){<option value="@country.CountryID">@country.CountryName</option>}</select></div>
+                            <div class="field"><label for="legalCity">City</label><input id="legalCity" @bind="legalCity" /></div>
+                            <div class="field"><label for="legalAddress">Address</label><input id="legalAddress" @bind="legalAddress" /></div>
+                            <div class="field"><label for="legalPostalCode">Postal Code</label><input id="legalPostalCode" @bind="legalPostal" /></div>
+                            <label class="checkbox-row"><input type="checkbox" @bind="sameAsLegal" /><span>Actual address is the same as legal address.</span></label>
+                            @if (!sameAsLegal)
+                            {
+                                <div class="section-divider"></div>
+                                <div class="field"><label for="factCountry">Fact Country</label><select id="factCountry" @bind="factCountry"><option value="">Select country</option>@foreach (var country in countries){<option value="@country.CountryID">@country.CountryName</option>}</select></div>
+                                <div class="field"><label for="factCity">Fact City</label><input id="factCity" @bind="factCity" /></div>
+                                <div class="field"><label for="factAddress">Fact Address</label><input id="factAddress" @bind="factAddress" /></div>
+                                <div class="field"><label for="factPostalCode">Fact Postal Code</label><input id="factPostalCode" @bind="factPostal" /></div>
+                            }
+                        </div>
+                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="ResetIdentification">Cancel</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!CanGoStep1)">Next</button></div>
+                    </div>
+                }
+                else if (wizardStep == 2)
+                {
+                    <div class="wizard-content-shell">
+                        <div class="form-stack">
+                            <div class="field"><label for="employmentStatus">Employment Status</label><select id="employmentStatus" @bind="empStatus"><option value="">Select status</option>@foreach (var status in employmentStatuses){<option value="@status.EmploymentStatusCode">@status.EmploymentStatus</option>}</select></div>
+                            <div class="field"><label for="workType">Work Type</label><select id="workType" @bind="workType"><option value="">Select work type</option>@foreach (var work in workTypes){<option value="@work.CustomerEmploymentTypeCode">@work.CustomerEmploymentType</option>}</select></div>
+                            <div class="field"><label for="employer">Employer</label><input id="employer" @bind="employer" /></div>
+                            <div class="field"><label for="workPosition">Position</label><input id="workPosition" @bind="workPosition" /></div>
+                        </div>
+                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!CanGoStep2)">Next</button></div>
+                    </div>
+                }
+                else if (wizardStep == 3)
+                {
+                    <div class="wizard-content-shell">
+                        <div class="form-stack">
+                            <div class="field"><label for="expectedTurnover">Expected Monthly Turnover</label><select id="expectedTurnover" @bind="expectedTurnover"><option value="">Select turnover</option>@foreach (var turnover in turnoverTypes){<option value="@turnover.ExpectedTurnoverCode">@turnover.ExpectedTurnover</option>}</select></div>
+                            <div class="field"><label for="annualIncome">Expected Annual Income</label><select id="annualIncome" @bind="annualIncome"><option value="">Select annual income</option>@foreach (var income in annualIncomes){<option value="@income.ExpectedAnnualIncomeCode">@income.ExpectedAnnualIncomeCode</option>}</select></div>
+                            <div class="field"><label>Expected Transaction Types</label><div class="purpose-list">@foreach (var purpose in transactionTypes){<label class="checkbox-card"><input type="checkbox" checked="@selectedTransactionTypes.Contains(purpose.ExpectedTransactionsID)" @onchange="args => ToggleTransactionType(purpose.ExpectedTransactionsID, (bool?)args.Value == true)" /><span>@purpose.ExpectedTransactionsCode</span></label>}</div></div>
+                            <div class="field"><label>Usage Purposes</label><div class="purpose-list">@foreach (var purpose in usagePurposes){<label class="checkbox-card"><input type="checkbox" checked="@selectedPurposes.Contains(purpose.UsageID)" @onchange="args => TogglePurpose(purpose.UsageID, (bool?)args.Value == true)" /><span>@purpose.UsagePurposeText</span></label>}</div></div>
+                            <label class="checkbox-row"><input type="checkbox" @bind="isPartnerSelected" /><span>Partner / international usage planned</span></label>
+                            <label class="checkbox-row"><input type="checkbox" @bind="isTransitUsagePlanned" /><span>Transit usage planned</span></label>
+                            <label class="checkbox-row"><input type="checkbox" @bind="isNoLocalAlternative" /><span>No local alternative available</span></label>
+                            <label class="checkbox-row"><input type="checkbox" @bind="isPayUnicardUsagePlanned" /><span>PayUnicard usage planned</span></label>
+                        </div>
+                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!CanGoStep3)">Next</button></div>
+                    </div>
+                }
+                else if (wizardStep == 4)
+                {
+                    <div class="wizard-content-shell wizard-content-shell-wide">
+                        @if (kycLoading)
+                        {
+                            <div class="alert alert-info">Preparing KYC session...</div>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(kycFrameUrl) && !kycDone)
+                        {
+                            <iframe class="kyc-frame" src="@kycFrameUrl" title="KYC Verification"></iframe>
+                        }
+                        else if (!kycDone)
+                        {
+                            <div class="summary-card">KYC session is ready. Start document capture and selfie verification in the embedded frame.</div>
+                        }
+                        @if (Environment.IsMockMode && !kycDone)
+                        {
+                            <button class="btn btn-outline" type="button" @onclick="SimulateKycCompletionAsync">Simulate KYC Complete</button>
+                        }
+                        @if (kycDone)
+                        {
+                            <div class="summary-card"><strong>KYC completed</strong><div>Name: @($"{kycData?.FirstName} {kycData?.LastName}".Trim())</div><div>Document number: @kycData?.DocumentNumber</div><div>Personal number: @kycData?.PersonalNumber</div></div>
+                        }
+                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep" disabled="@kycLoading">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!kycDone)">Next</button></div>
+                    </div>
+                }
+                else if (wizardStep == 5)
+                {
+                    <div class="wizard-content-shell">
+                        <div class="summary-card"><div><strong>Name:</strong> @($"{kycData?.FirstName} {kycData?.LastName}".Trim())</div><div><strong>Birth Date:</strong> @kycData?.BirthDate</div><div><strong>Nationality:</strong> @kycData?.Nationality</div><div><strong>Document Type:</strong> @kycData?.DocumetType</div><div><strong>Document Number:</strong> @kycData?.DocumentNumber</div></div>
+                        <div class="form-stack">
+                            <div class="field"><label for="dualCitizen">Dual Citizen</label><select id="dualCitizen" @bind="dualCitizen"><option value="0">No</option><option value="1">Yes</option></select></div>
+                            @if (dualCitizen == 1)
+                            {
+                                <div class="field"><label for="secondCitizenship">Second Citizenship Country</label><select id="secondCitizenship" @bind="secondCitizenshipCountry"><option value="0">Select country</option>@foreach (var country in countries){<option value="@country.CountryID">@country.CountryName</option>}</select></div>
+                            }
+                        </div>
+                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync">Next</button></div>
+                    </div>
+                }
+                else
+                {
+                    <div class="wizard-content-shell">
+                        <div class="review-grid">
+                            <div class="summary-card"><strong>Address</strong><div>@LegalCountryName</div><div>@legalCity</div><div>@legalAddress</div><div>@legalPostal</div></div>
+                            <div class="summary-card"><strong>Employment</strong><div>@GetEmploymentStatusLabel(empStatus)</div><div>@GetWorkTypeLabel(workType)</div><div>@employer</div><div>@workPosition</div></div>
+                            <div class="summary-card"><strong>Bank Relationship</strong><div>Turnover: @GetTurnoverLabel(expectedTurnover)</div><div>Annual income: @annualIncome</div><div>Transaction types: @SelectedTransactionTypeSummary</div><div>Usage purposes: @SelectedUsagePurposeSummary</div></div>
+                            <div class="summary-card"><strong>KYC</strong><div>Name: @($"{kycData?.FirstName} {kycData?.LastName}".Trim())</div><div>Document: @kycData?.DocumentNumber</div><div>Citizenship: @kycData?.CountryName</div><div>Status: @(kycDone ? "Completed" : "Pending")</div></div>
+                        </div>
+                        @if (submitSuccess)
+                        {
+                            <div class="alert alert-success">Registration submitted successfully.</div>
+                            <button class="btn btn-primary" type="button" @onclick='() => Nav.NavigateTo("/success")'>Continue</button>
+                        }
+                        else
+                        {
+                            <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="SubmitAllAsync" disabled="@loading">@if (loading){<span class="spinner"></span>}<span>Submit Application</span></button></div>
+                        }
                     </div>
                 }
             </div>
-
-            <div style="display:flex; gap:.65rem; margin-top:.5rem">
-                <button class="btn btn-outline" style="flex:1" @onclick="PrevStep">← Back</button>
-                <button class="btn btn-primary" style="flex:2" @onclick="NextStep" disabled="@(!CanGoStep3)">Next →</button>
-            </div>
         }
-
-        <!-- ─── STEP 4: KYC ID Scan ──────────────────────────────────── -->
-        else if (wizardStep == 4)
-        {
-            <h2 class="reg-title" style="font-size:1.25rem">Identity Scan</h2>
-            <p class="reg-subtitle">You will be redirected to scan your ID document and take a selfie.</p>
-
-            @if (kycFrameUrl == null)
-            {
-                <div style="text-align:center; padding:2rem">
-                    <div class="spinner" style="width:36px;height:36px;border-color:rgba(37,99,235,.2);border-top-color:var(--primary);margin:0 auto 1rem"></div>
-                    <p style="color:var(--text-muted); font-size:.875rem">Preparing KYC session…</p>
-                </div>
-            }
-            else if (kycDone)
-            {
-                <div class="alert alert-success">✓ Identity scan complete. Proceeding…</div>
-            }
-            else
-            {
-                <div class="alert alert-info" style="margin-bottom:1rem">
-                    🔐 <strong>Mock mode:</strong> The KYC iframe below is simulated.
-                </div>
-                <!-- Simulated KYC iframe -->
-                <div style="border:2px dashed var(--border); border-radius:var(--radius); padding:2.5rem; text-align:center; background:var(--primary-light); margin-bottom:1.25rem">
-                    <div style="font-size:2.5rem; margin-bottom:.5rem">📷</div>
-                    <div style="font-weight:600; margin-bottom:.25rem">KYC Camera Verification</div>
-                    <div style="font-size:.8rem; color:var(--text-muted); margin-bottom:1rem">Scan your ID + Selfie via Kvalifika</div>
-                    <button class="btn btn-primary" style="width:auto; padding:.6rem 1.5rem" @onclick="SimulateKycDone">
-                        Simulate Scan Complete ✓
-                    </button>
-                </div>
-            }
-
-            <div style="display:flex; gap:.65rem">
-                <button class="btn btn-outline" style="flex:1" @onclick="PrevStep" disabled="@kycDone">← Back</button>
-                <button class="btn btn-primary" style="flex:2" @onclick="NextStep" disabled="@(!kycDone)">Next →</button>
-            </div>
-        }
-
-        <!-- ─── STEP 5: Review KYC Data ───────────────────────────────── -->
-        else if (wizardStep == 5)
-        {
-            <h2 class="reg-title" style="font-size:1.25rem">Review Your Information</h2>
-            <p class="reg-subtitle">Please verify the information extracted from your ID.</p>
-
-            <div style="background:var(--bg); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1.25rem; font-size:.875rem; line-height:2">
-                <div><strong>Name:</strong> @kycData?.FirstName @kycData?.LastName</div>
-                <div><strong>Personal No:</strong> @kycData?.PersonalNumber</div>
-                <div><strong>Nationality:</strong> @kycData?.Nationality</div>
-                <div><strong>Document No:</strong> @kycData?.DocumentNumber</div>
-            </div>
-
-            <div class="field">
-                <label>Dual Citizenship?</label>
-                <select @bind="dualCitizen">
-                    <option value="0">No</option>
-                    <option value="1">Yes</option>
-                </select>
-            </div>
-
-            @if (dualCitizen == 1)
-            {
-                <div class="field">
-                    <label>Second Citizenship Country</label>
-                    <select @bind="secondCitizenshipCountry">
-                        <option value="">— Select —</option>
-                        @foreach (var c in countries) { <option value="@c.CountryID">@c.CountryName</option> }
-                    </select>
-                </div>
-            }
-
-            <div style="display:flex; gap:.65rem; margin-top:.5rem">
-                <button class="btn btn-outline" style="flex:1" @onclick="PrevStep">← Back</button>
-                <button class="btn btn-primary" style="flex:2" @onclick="NextStep">Next →</button>
-            </div>
-        }
-
-        <!-- ─── STEP 6: Submit ────────────────────────────────────────── -->
-        else if (wizardStep == 6)
-        {
-            <h2 class="reg-title" style="font-size:1.25rem">Final Review & Submit</h2>
-            <p class="reg-subtitle">Everything looks good. Submit your registration for review.</p>
-
-            <div style="background:var(--bg); border-radius:var(--radius-sm); padding:1rem; font-size:.875rem; line-height:2; margin-bottom:1.25rem">
-                <div>📍 <strong>Address:</strong> @legalCity, @legalAddress</div>
-                <div>💼 <strong>Employment:</strong> @empStatus — @employer</div>
-                <div>💰 <strong>Turnover:</strong> @expectedTurnover</div>
-                <div>🪪 <strong>KYC:</strong> ✓ Verified</div>
-            </div>
-
-            @if (submitSuccess)
-            {
-                <div class="alert alert-success">
-                    ✓ Registration submitted! Your account is under review.
-                </div>
-                <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/success")'>
-                    Go to Success Page →
-                </button>
-            }
-            else
-            {
-                <div style="display:flex; gap:.65rem">
-                    <button class="btn btn-outline" style="flex:1" @onclick="PrevStep">← Back</button>
-                    <button class="btn btn-primary" style="flex:2" @onclick="SubmitAll" disabled="@loading">
-                        @if (loading) { <span class="spinner"></span> }
-                        Submit Application
-                    </button>
-                </div>
-            }
-        }
-
     </div>
 </div>
 
 @code {
     private int wizardStep = 1;
-    private bool loading = false;
-    private string errorMsg = "";
-
-    // ── Lookup data ──────────────────────────────────────────────────────
+    private bool loading, submitSuccess, hasStarted, sameAsLegal = true, kycDone, kycLoading, isPartnerSelected, isTransitUsagePlanned, isNoLocalAlternative, isPayUnicardUsagePlanned, identificationStartedNotified;
+    private int dualCitizen, secondCitizenshipCountry;
+    private string errorMsg = string.Empty, legalCountry = string.Empty, legalCity = string.Empty, legalAddress = string.Empty, legalPostal = string.Empty, factCountry = string.Empty, factCity = string.Empty, factAddress = string.Empty, factPostal = string.Empty, empStatus = string.Empty, workType = string.Empty, employer = string.Empty, workPosition = string.Empty, expectedTurnover = string.Empty, annualIncome = string.Empty, kycSessionId = string.Empty, kycListenerId = string.Empty;
+    private string? kycFrameUrl;
+    private IDisposable? kycCallbackReference;
+    private CloseSessionResponse? kycData;
     private List<CitizenshipCountry> countries = [];
     private List<EmploymentStatusType> employmentStatuses = [];
     private List<WorkType> workTypes = [];
     private List<ExpectedTurnoverType> turnoverTypes = [];
+    private List<ExpectedTransactionType> transactionTypes = [];
     private List<AnnualIncomeType> annualIncomes = [];
     private List<UsagePurpose> usagePurposes = [];
-
-    // ── Step 1: Address ──────────────────────────────────────────────────
-    private string legalCountry = "";
-    private string legalCity = "";
-    private string legalAddress = "";
-    private string legalPostal = "";
-    private bool sameAsLegal = true;
-    private string factCountry = "";
-    private string factCity = "";
-    private string factAddress = "";
-
-    // ── Step 2: Employment ───────────────────────────────────────────────
-    private string empStatus = "";
-    private string workType = "";
-    private string employer = "";
-    private string workPosition = "";
-
-    // ── Step 3: Financial ────────────────────────────────────────────────
-    private string expectedTurnover = "";
-    private string annualIncome = "";
+    private List<int> selectedTransactionTypes = [];
     private List<int> selectedPurposes = [];
 
-    // ── Step 4: KYC ──────────────────────────────────────────────────────
-    private string? kycFrameUrl;
-    private bool kycDone = false;
-    private KycData? kycData;
-    private string kycSessionId = "";
-
-    // ── Step 5: Review ───────────────────────────────────────────────────
-    private int dualCitizen = 0;
-    private int secondCitizenshipCountry = 0;
-
-    // ── Step 6: Submit ───────────────────────────────────────────────────
-    private bool submitSuccess = false;
-
-    // ── Validation ───────────────────────────────────────────────────────
-    private bool CanGoStep1 => !string.IsNullOrEmpty(legalCity) && !string.IsNullOrEmpty(legalAddress);
-    private bool CanGoStep2 => !string.IsNullOrEmpty(empStatus) && !string.IsNullOrEmpty(workType);
-    private bool CanGoStep3 => !string.IsNullOrEmpty(expectedTurnover) && !string.IsNullOrEmpty(annualIncome);
+    private bool CanGoStep1 => !string.IsNullOrWhiteSpace(legalCountry) && !string.IsNullOrWhiteSpace(legalCity) && !string.IsNullOrWhiteSpace(legalAddress) && !string.IsNullOrWhiteSpace(legalPostal) && (sameAsLegal || (!string.IsNullOrWhiteSpace(factCountry) && !string.IsNullOrWhiteSpace(factCity) && !string.IsNullOrWhiteSpace(factAddress) && !string.IsNullOrWhiteSpace(factPostal)));
+    private bool CanGoStep2 => !string.IsNullOrWhiteSpace(empStatus) && !string.IsNullOrWhiteSpace(workType);
+    private bool CanGoStep3 => !string.IsNullOrWhiteSpace(expectedTurnover) && !string.IsNullOrWhiteSpace(annualIncome) && selectedTransactionTypes.Count > 0;
+    private string CurrentStepTitle => wizardStep switch { 1 => "Legal Address", 2 => "Employment", 3 => "Relationship with Bank", 4 => "Identification", 5 => "Additional Data", _ => "Check Data" };
+    private string CurrentStepSubtitle => wizardStep switch { 1 => "Please enter your legal address. If your factual address is different, add it as well.", 2 => "Tell us about your current employment situation.", 3 => "This information is required for compliance review.", 4 => "Complete document scanning and selfie verification.", 5 => "Review the data received from KYC and add any missing details.", _ => "Confirm all information before final submission." };
+    private string LegalCountryName => GetCountryName(legalCountry);
+    private string SelectedTransactionTypeSummary => selectedTransactionTypes.Count == 0 ? "Not selected" : string.Join(", ", transactionTypes.Where(type => selectedTransactionTypes.Contains(type.ExpectedTransactionsID)).Select(type => type.ExpectedTransactionsCode));
+    private string SelectedUsagePurposeSummary => selectedPurposes.Count == 0 ? "Not selected" : string.Join(", ", usagePurposes.Where(type => selectedPurposes.Contains(type.UsageID)).Select(type => type.UsagePurposeText));
 
     protected override async Task OnInitializedAsync()
     {
-        var countriesTask = PresentationService.GetCitizenshipCountriesAsync();
-        var empTask       = PresentationService.GetCustomerEmploymentStatusTypesAsync();
-        var workTask      = PresentationService.GetCustomerWorkTypesAsync();
-        var turnoverTask  = PresentationService.GetExpectedTransactionTypesAsync();
-        var incomeTask    = PresentationService.GetCustomerAnnualIncomeTypesAsync();
-        var purposeTask   = PresentationService.GetCustomerUsagePurposeAsync();
-
-        await Task.WhenAll(countriesTask, empTask, workTask, turnoverTask, incomeTask, purposeTask);
-
-        countries          = (await countriesTask)?.Countries ?? [];
-        employmentStatuses = (await empTask)?.Statuses ?? [];
-        workTypes          = (await workTask)?.Types ?? [];
-        turnoverTypes      = (await turnoverTask)?.ExpectedTurnoverTypes ?? [];
-        annualIncomes      = (await incomeTask)?.ExpectedAnnualIncomes ?? [];
-        usagePurposes      = (await purposeTask)?.CustomerUsagePurposes ?? [];
-    }
-
-    private void TogglePurpose(int id, bool add)
-    {
-        if (add) { if (!selectedPurposes.Contains(id)) selectedPurposes.Add(id); }
-        else selectedPurposes.Remove(id);
-    }
-
-    private async Task NextStep()
-    {
-        errorMsg = "";
-        if (wizardStep == 4 && !kycDone)
+        if (string.IsNullOrWhiteSpace(State.PreRegistration.UserName))
         {
-            await OpenKycSession();
+            Nav.NavigateTo("/");
             return;
         }
-        wizardStep++;
-        if (wizardStep == 4 && kycFrameUrl == null)
-            await OpenKycSession();
+
+        try
+        {
+            var countriesTask = PresentationService.GetCitizenshipCountriesAsync();
+            var employmentTask = PresentationService.GetCustomerEmploymentStatusTypesAsync();
+            var workTask = PresentationService.GetCustomerWorkTypesAsync();
+            var turnoverTask = PresentationService.GetExpectedTransactionTypesAsync();
+            var incomeTask = PresentationService.GetCustomerAnnualIncomeTypesAsync();
+            var purposeTask = PresentationService.GetCustomerUsagePurposeAsync();
+
+            await Task.WhenAll(countriesTask, employmentTask, workTask, turnoverTask, incomeTask, purposeTask);
+
+            countries = (await countriesTask)?.Countries ?? [];
+            employmentStatuses = (await employmentTask)?.Statuses ?? [];
+            workTypes = (await workTask)?.Types ?? [];
+
+            var turnoverData = await turnoverTask;
+            turnoverTypes = turnoverData?.ExpectedTurnoverTypes ?? [];
+            transactionTypes = turnoverData?.ExpectedTransactionTypes ?? [];
+
+            annualIncomes = (await incomeTask)?.ExpectedAnnualIncomes ?? [];
+            usagePurposes = (await purposeTask)?.CustomerUsagePurposes ?? [];
+        }
+        catch (Exception ex)
+        {
+            errorMsg = $"Failed to load presentation data: {ex.Message}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || identificationStartedNotified)
+        {
+            return;
+        }
+
+        try
+        {
+            await IframeInterop.NotifyParentAsync("identification.started", new { username = State.PreRegistration.UserName });
+            identificationStartedNotified = true;
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+
+    private async Task StartIdentificationAsync()
+    {
+        hasStarted = true;
+        await IframeInterop.NotifyParentAsync("identification.start.clicked", new { username = State.PreRegistration.UserName });
+    }
+
+    private void ResetIdentification()
+    {
+        hasStarted = false;
+        wizardStep = 1;
+        errorMsg = string.Empty;
     }
 
     private void PrevStep()
     {
-        if (wizardStep > 1) wizardStep--;
-        errorMsg = "";
+        errorMsg = string.Empty;
+        if (wizardStep > 1)
+        {
+            wizardStep--;
+        }
     }
 
-    private async Task OpenKycSession()
+    private async Task NextStepAsync()
     {
+        errorMsg = string.Empty;
+
+        if (wizardStep == 3)
+        {
+            await OpenKycSessionAsync();
+        }
+
+        if (wizardStep < 6)
+        {
+            wizardStep++;
+        }
+    }
+
+    private void TogglePurpose(int id, bool isSelected)
+    {
+        if (isSelected)
+        {
+            if (!selectedPurposes.Contains(id))
+            {
+                selectedPurposes.Add(id);
+            }
+            return;
+        }
+
+        selectedPurposes.Remove(id);
+    }
+
+    private void ToggleTransactionType(int id, bool isSelected)
+    {
+        if (isSelected)
+        {
+            if (!selectedTransactionTypes.Contains(id))
+            {
+                selectedTransactionTypes.Add(id);
+            }
+            return;
+        }
+
+        selectedTransactionTypes.Remove(id);
+    }
+
+    private async Task OpenKycSessionAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(kycFrameUrl) || kycDone || kycLoading)
+        {
+            return;
+        }
+
+        kycLoading = true;
         try
         {
             await KycService.CheckSessionLimitWebAsync();
             var session = await KycService.OpenSessionAsync();
-            kycFrameUrl  = session?.FrameUrl;
-            kycSessionId = session?.SessionId ?? "";
+            kycFrameUrl = session?.FrameUrl;
+            kycSessionId = session?.SessionId ?? string.Empty;
+            State.KycData = null;
 
             if (session?.SkipKycSession == true)
             {
-                kycDone = true;
-                var data = await KycService.GetSessionDataAsync();
-                kycData = data?.Data?.FirstOrDefault();
+                var data = await KycService.GetSessionDataAsync(session.SessionId);
+                kycData = data?.Data.FirstOrDefault() is { } existingData ? ToCloseSessionData(existingData) : null;
+                State.KycData = kycData;
+                kycDone = kycData is not null;
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(kycFrameUrl))
+            {
+                var callback = DotNetObjectReference.Create(this);
+                kycCallbackReference = callback;
+                kycListenerId = await IframeInterop.RegisterKycListenerAsync(callback);
             }
         }
         catch (Exception ex)
         {
-            errorMsg = "Failed to open KYC session: " + ex.Message;
+            errorMsg = $"Failed to open KYC session: {ex.Message}";
+        }
+        finally
+        {
+            kycLoading = false;
         }
     }
 
-    private async Task SimulateKycDone()
+    [JSInvokable]
+    public async Task HandleKycMessage(string origin, string eventName)
     {
-        // In real mode: listen for postMessage from Kvalifika iframe, then call CloseSession
-        var result = await KycService.CloseSessionAsync(kycSessionId);
-        kycData = result;
-        kycDone = true;
+        await CompleteKycAsync($"KYC callback received from {origin} ({eventName}).");
     }
 
-    private async Task SubmitAll()
+    private Task SimulateKycCompletionAsync() => CompleteKycAsync("Mock KYC completion was triggered.");
+
+    private async Task CompleteKycAsync(string sourceDescription)
     {
-        loading = true;
-        errorMsg = "";
         try
         {
-            // Step A: CustomerRegistration (financial + address data)
-            var custReq = new CustomerRegistrationRequest
-            {
-                LegalCountryID       = string.IsNullOrEmpty(legalCountry) ? null : int.Parse(legalCountry),
-                LegalCity            = legalCity,
-                LegalAddress         = legalAddress,
-                LegalPostalCode      = legalPostal,
-                FactCountryID        = sameAsLegal
-                    ? (string.IsNullOrEmpty(legalCountry) ? null : int.Parse(legalCountry))
-                    : (string.IsNullOrEmpty(factCountry) ? null : int.Parse(factCountry)),
-                FactCity             = sameAsLegal ? legalCity : factCity,
-                FactAddress          = sameAsLegal ? legalAddress : factAddress,
-                EmploymentStatusCode = empStatus,
-                EmploymentTypeCode   = workType,
-                Employer             = employer,
-                WorkPosition         = workPosition,
-                ExpectedTurnoverCode = expectedTurnover,
-                ExpectedAnualIncomeCode = annualIncome,
-                ExpectedTransactionTypes = selectedPurposes
-            };
-            await UserService.CustomerRegistrationAsync(custReq);
-
-            // Step B: FinishCustomerRegistration (KYC document data)
-            var finishReq = new FinishCustomerRegistrationRequest
-            {
-                Name              = kycData?.FirstName ?? "",
-                Surname           = kycData?.LastName ?? "",
-                PersonalID        = kycData?.PersonalNumber ?? "",
-                DocumentNumber    = kycData?.DocumentNumber ?? "",
-                DocumentType      = kycData?.DocumetType ?? "ID_CARD",
-                DualCitizen       = dualCitizen,
-                SecondaryCitizenshipCountryID = secondCitizenshipCountry,
-                CitizenshipCountryID = kycData?.CountryID ?? 0,
-                BirthCountryId    = kycData?.CountryID ?? 0,
-                DocumentFrontSide = kycData?.DocumentFrontSide ?? "",
-                DocumentFrontSideName = "front.jpg",
-                DocumentBackSide  = kycData?.DocumentBackSide ?? "",
-                DocumentBackSideName = "back.jpg",
-                CustomerSelf      = kycData?.SelfImages?.FirstOrDefault() ?? "",
-                CustomerSelfName  = "selfie.jpg"
-            };
-            await UserService.FinishCustomerRegistrationAsync(finishReq);
-
-            submitSuccess = true;
+            var result = await KycService.CloseSessionAsync(kycSessionId);
+            kycData = result;
+            State.KycData = result;
+            kycDone = result is not null;
+            await IframeInterop.NotifyParentAsync("identification.kyc.completed", new { sessionId = kycSessionId, source = sourceDescription });
         }
         catch (Exception ex)
         {
-            errorMsg = "Submission failed: " + ex.Message;
+            errorMsg = $"Failed to close KYC session: {ex.Message}";
         }
-        loading = false;
     }
 
-    public void Dispose() { }
+    private async Task SubmitAllAsync()
+    {
+        loading = true;
+        errorMsg = string.Empty;
+
+        try
+        {
+            var customerRegistration = new CustomerRegistrationRequest
+            {
+                LegalCountryID = ParseNullableInt(legalCountry),
+                LegalCity = legalCity.Trim(),
+                LegalAddress = legalAddress.Trim(),
+                LegalPostalCode = legalPostal.Trim(),
+                FactCountryID = sameAsLegal ? ParseNullableInt(legalCountry) : ParseNullableInt(factCountry),
+                FactCity = sameAsLegal ? legalCity.Trim() : factCity.Trim(),
+                FactAddress = sameAsLegal ? legalAddress.Trim() : factAddress.Trim(),
+                FactPostalCode = sameAsLegal ? legalPostal.Trim() : factPostal.Trim(),
+                Employer = employer.Trim(),
+                EmploymentStatusCode = empStatus,
+                EmploymentTypeCode = workType,
+                WorkPosition = workPosition.Trim(),
+                ExpectedTurnoverCode = expectedTurnover,
+                ExpectedAnualIncomeCode = annualIncome,
+                ExpectedTransactionTypes = [.. selectedTransactionTypes],
+                DocumentRegisterCountryId = kycData?.DocumentIssuingCountryID,
+                IsTransitUsagePlanned = isTransitUsagePlanned,
+                IsPartnerSelected = isPartnerSelected,
+                IsGeorgiaSelected = State.PreRegistration.CitizenshipCountryID == 1,
+                IsNoLocalAlternative = isNoLocalAlternative,
+                IsPayUnicardUsagePlanned = isPayUnicardUsagePlanned
+            };
+
+            State.Customer = customerRegistration;
+            await UserService.CustomerRegistrationAsync(customerRegistration);
+
+            if (State.PreRegistration.CitizenshipCountryID != 1)
+            {
+                await UserService.ChangeCustomerAsync(new ChangeCustomerRequest
+                {
+                    DocumentRegisterCountryId = kycData?.DocumentIssuingCountryID,
+                    ExpectedAnualIncomeCode = annualIncome,
+                    IsTransitUsagePlanned = isTransitUsagePlanned,
+                    IsPartnerSelected = isPartnerSelected,
+                    IsGeorgiaSelected = false,
+                    IsNoLocalAlternative = isNoLocalAlternative,
+                    IsPayUnicardUsagePlanned = isPayUnicardUsagePlanned
+                });
+            }
+
+            var finishRequest = new FinishCustomerRegistrationRequest
+            {
+                DocumentType = string.IsNullOrWhiteSpace(kycData?.DocumetType) ? "ID_CARD" : kycData.DocumetType,
+                Name = kycData?.FirstName ?? State.PreRegistration.Name,
+                Surname = kycData?.LastName ?? State.PreRegistration.Surname,
+                PersonalID = kycData?.PersonalNumber ?? State.PreRegistration.PersonalId,
+                DocumentNumber = kycData?.DocumentNumber ?? string.Empty,
+                DocumentFrontSide = kycData?.DocumentFrontSide ?? string.Empty,
+                DocumentFrontSideName = "front.jpg",
+                DocumentBackSide = kycData?.DocumentBackSide ?? string.Empty,
+                DocumentBackSideName = "back.jpg",
+                CustomerSelf = kycData?.SelfImages.FirstOrDefault() ?? string.Empty,
+                CustomerSelfName = "selfie.jpg",
+                Sex = ParseSex(kycData?.Sex),
+                BirthDate = kycData?.BirthDate ?? State.PreRegistration.BirthDate,
+                IssueDate = kycData?.IssueDate ?? string.Empty,
+                ValidTo = kycData?.ExpirationDate ?? string.Empty,
+                CitizenshipCountryID = kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
+                BirthCity = legalCity,
+                BirthCountryId = kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
+                DualCitizen = dualCitizen,
+                SecondaryCitizenshipCountryID = secondCitizenshipCountry
+            };
+
+            await UserService.FinishCustomerRegistrationAsync(finishRequest);
+            submitSuccess = true;
+            await IframeInterop.NotifyParentAsync("registration.completed", new { username = State.PreRegistration.UserName });
+        }
+        catch (Exception ex)
+        {
+            errorMsg = $"Submission failed: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private string GetCountryName(string? countryId)
+        => countries.FirstOrDefault(country => country.CountryID.ToString() == countryId)?.CountryName ?? "Not selected";
+
+    private string GetEmploymentStatusLabel(string? statusCode)
+        => employmentStatuses.FirstOrDefault(status => status.EmploymentStatusCode == statusCode)?.EmploymentStatus ?? "Not selected";
+
+    private string GetWorkTypeLabel(string? workTypeCode)
+        => workTypes.FirstOrDefault(type => type.CustomerEmploymentTypeCode == workTypeCode)?.CustomerEmploymentType ?? "Not selected";
+
+    private string GetTurnoverLabel(string? turnoverCode)
+        => turnoverTypes.FirstOrDefault(type => type.ExpectedTurnoverCode == turnoverCode)?.ExpectedTurnover ?? "Not selected";
+
+    private static int? ParseNullableInt(string? value)
+        => int.TryParse(value, out var parsed) ? parsed : null;
+
+    private static int ParseSex(string? value)
+        => string.Equals(value, "male", StringComparison.OrdinalIgnoreCase) || value == "1" ? 1 : 0;
+
+    private static CloseSessionResponse ToCloseSessionData(KycData data)
+        => new()
+        {
+            FirstName = data.FirstName,
+            LastName = data.LastName,
+            BirthDate = data.BirthDate,
+            ExpirationDate = data.ExpirationDate,
+            Sex = data.Sex,
+            Nationality = data.Nationality,
+            DocumentNumber = data.DocumentNumber,
+            PersonalNumber = data.PersonalNumber,
+            DocumentFrontSide = data.DocumentFrontSide,
+            DocumentBackSide = data.DocumentBackSide,
+            DocumetType = data.DocumetType,
+            SelfImages = data.SelfImages,
+            Verified = data.Verified,
+            Status = data.Status,
+            CountryID = data.CountryID,
+            CountryName = data.CountryName,
+            DocumentIssuingCountryID = data.DocumentIssuingCountryID
+        };
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(kycListenerId))
+        {
+            await IframeInterop.RemoveKycListenerAsync(kycListenerId);
+        }
+
+        kycCallbackReference?.Dispose();
+    }
 }

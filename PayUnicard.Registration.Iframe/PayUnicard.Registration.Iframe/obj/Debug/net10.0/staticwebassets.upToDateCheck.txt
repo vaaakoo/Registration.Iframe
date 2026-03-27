@@ -1,5 +1,10 @@
 wwwroot\app.css
 wwwroot\favicon.png
+wwwroot\fonts\FiraGo\400.woff
+wwwroot\fonts\FiraGo\500.woff
+wwwroot\fonts\FiraGo\700.woff
+wwwroot\images\payunicard_en.svg
+wwwroot\js\registration-iframe.js
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css
@@ -47,6 +52,8 @@ wwwroot\lib\bootstrap\dist\js\bootstrap.min.js.map
 C:\Users\v.Janikashvili\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.5\build\..\_framework\blazor.web.js
 C:\Users\v.Janikashvili\.nuget\packages\microsoft.aspnetcore.app.internal.assets\10.0.5\build\..\_framework\blazor.server.js
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\wwwroot\app.css
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\wwwroot\images\payunicard_en.svg
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\wwwroot\js\registration-iframe.js
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css.map
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.min.css

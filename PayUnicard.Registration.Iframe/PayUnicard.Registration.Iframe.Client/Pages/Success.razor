@@ -1,39 +1,42 @@
 @page "/success"
 @rendermode InteractiveWebAssembly
+@inject IIframeInteropService IframeInterop
+@inject NavigationManager Nav
 
 <div class="reg-page">
-    <div class="reg-card" style="text-align:center">
-
-        <div class="reg-logo" style="justify-content:center">
-            <div class="reg-logo-icon">P</div>
-            <div class="reg-logo-name">Registration</div>
+    <div class="reg-card reg-card-wide">
+        <div class="reg-logo">
+            <img class="reg-logo-mark" src="/images/payunicard_en.svg" alt="PayUnicard" />
         </div>
 
-        <div class="success-screen">
-            <div class="success-icon">✓</div>
-            <h3>Application Submitted!</h3>
-            <p>
-                Your identity verification has been submitted for review.<br />
-                You will receive a notification once it is approved.
-            </p>
+        <div class="wizard-shell">
+            <h1 class="reg-title wizard-title">Identification</h1>
 
-            <div class="alert alert-info" style="text-align:left">
-                📋 <strong>What happens next?</strong><br />
-                <ul style="margin:.5rem 0 0 1rem; padding:0; font-size:.85rem">
-                    <li>Our compliance team will review your documents</li>
-                    <li>This usually takes 1–2 business days</li>
-                    <li>You will receive an email/SMS with the result</li>
-                    <li>Once approved, your card will be issued</li>
-                </ul>
-            </div>
+            <div class="wizard-content-shell">
+                <div class="waiting-panel">
+                    <div class="waiting-badge">
+                        <span></span>
+                    </div>
+                    <p class="waiting-title">Your application is under review</p>
+                    <p class="waiting-copy">
+                        Your identity verification has been submitted successfully.
+                        We will notify you once the compliance review is finished.
+                    </p>
+                </div>
 
-            <div style="display:flex; flex-direction:column; gap:.65rem; margin-top:1.25rem">
-                <button class="btn btn-primary" onclick="window.parent.postMessage({type:'REGISTRATION_COMPLETE', status:'submitted'}, '*')">
-                    ✓ Close & Continue
-                </button>
-                <a href="/" style="color:var(--text-muted); font-size:.85rem; text-decoration:none">← Start new registration</a>
+                <div class="button-row success-actions">
+                    <button class="btn btn-primary" type="button" @onclick="CloseAndContinueAsync">Close & Continue</button>
+                    <button class="btn btn-outline" type="button" @onclick='() => Nav.NavigateTo("/")'>Start New Registration</button>
+                </div>
             </div>
         </div>
-
     </div>
 </div>
+
+@code {
+    private async Task CloseAndContinueAsync()
+    {
+        await IframeInterop.NotifyParentAsync("registration.review.pending", new { status = "submitted" });
+        Nav.NavigateTo("/");
+    }
+}
