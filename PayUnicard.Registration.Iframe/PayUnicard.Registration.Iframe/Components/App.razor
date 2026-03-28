@@ -9,11 +9,13 @@
     <base href="/" />
     <link rel="stylesheet" href="/app.css" />
     <link rel="icon" type="image/png" href="/favicon.png" />
+
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveWebAssembly" />
+    <PayUnicard.Registration.Iframe.Client.App @rendermode="InteractiveWebAssembly" />
+
     <script src="/js/registration-iframe.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>

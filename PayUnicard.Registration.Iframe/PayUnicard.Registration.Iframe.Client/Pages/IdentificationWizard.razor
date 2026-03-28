@@ -81,10 +81,34 @@
                 {
                     <div class="wizard-content-shell">
                         <div class="form-stack">
-                            <div class="field"><label for="employmentStatus">Employment Status</label><select id="employmentStatus" @bind="empStatus"><option value="">Select status</option>@foreach (var status in employmentStatuses){<option value="@status.EmploymentStatusCode">@status.EmploymentStatus</option>}</select></div>
-                            <div class="field"><label for="workType">Work Type</label><select id="workType" @bind="workType"><option value="">Select work type</option>@foreach (var work in workTypes){<option value="@work.CustomerEmploymentTypeCode">@work.CustomerEmploymentType</option>}</select></div>
-                            <div class="field"><label for="employer">Employer</label><input id="employer" @bind="employer" /></div>
-                            <div class="field"><label for="workPosition">Position</label><input id="workPosition" @bind="workPosition" /></div>
+                            <div class="field">
+                                <label for="employmentStatus">Employment Status</label>
+                                <select id="employmentStatus" @bind="empStatus" @bind:after="OnEmploymentStatusChanged">
+                                    <option value="">Select status</option>
+                                    @foreach (var status in employmentStatuses)
+                                    {
+                                        <option value="@status.EmploymentStatusCode">@status.EmploymentStatus</option>
+                                    }
+                                </select>
+                            </div>
+                            @if (IsEmployed)
+                            {
+                                <div class="field">
+                                    <label for="workType">Work Type</label>
+                                    <select id="workType" @bind="workType" @bind:after="OnWorkTypeChanged">
+                                        <option value="">Select work type</option>
+                                        @foreach (var work in workTypes)
+                                        {
+                                            <option value="@work.CustomerEmploymentTypeCode">@work.CustomerEmploymentType</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                            @if (IsEmployed && !IsSelfEmployed)
+                            {
+                                <div class="field"><label for="employer">Employer</label><input id="employer" @bind="employer" /></div>
+                                <div class="field"><label for="workPosition">Position</label><input id="workPosition" @bind="workPosition" /></div>
+                            }
                         </div>
                         <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!CanGoStep2)">Next</button></div>
                     </div>
@@ -94,13 +118,17 @@
                     <div class="wizard-content-shell">
                         <div class="form-stack">
                             <div class="field"><label for="expectedTurnover">Expected Monthly Turnover</label><select id="expectedTurnover" @bind="expectedTurnover"><option value="">Select turnover</option>@foreach (var turnover in turnoverTypes){<option value="@turnover.ExpectedTurnoverCode">@turnover.ExpectedTurnover</option>}</select></div>
-                            <div class="field"><label for="annualIncome">Expected Annual Income</label><select id="annualIncome" @bind="annualIncome"><option value="">Select annual income</option>@foreach (var income in annualIncomes){<option value="@income.ExpectedAnnualIncomeCode">@income.ExpectedAnnualIncomeCode</option>}</select></div>
+                            <div class="field">
+                                <label for="annualIncome">Expected Annual Income</label>
+                                <select id="annualIncome" @bind="annualIncomeId">
+                                    <option value="">Select annual income</option>
+                                    @foreach (var income in annualIncomes)
+                                    {
+                                        <option value="@income.ExpectedAnnualIncomeId">@income.ExpectedAnnualIncomeCode</option>
+                                    }
+                                </select>
+                            </div>
                             <div class="field"><label>Expected Transaction Types</label><div class="purpose-list">@foreach (var purpose in transactionTypes){<label class="checkbox-card"><input type="checkbox" checked="@selectedTransactionTypes.Contains(purpose.ExpectedTransactionsID)" @onchange="args => ToggleTransactionType(purpose.ExpectedTransactionsID, (bool?)args.Value == true)" /><span>@purpose.ExpectedTransactionsCode</span></label>}</div></div>
-                            <div class="field"><label>Usage Purposes</label><div class="purpose-list">@foreach (var purpose in usagePurposes){<label class="checkbox-card"><input type="checkbox" checked="@selectedPurposes.Contains(purpose.UsageID)" @onchange="args => TogglePurpose(purpose.UsageID, (bool?)args.Value == true)" /><span>@purpose.UsagePurposeText</span></label>}</div></div>
-                            <label class="checkbox-row"><input type="checkbox" @bind="isPartnerSelected" /><span>Partner / international usage planned</span></label>
-                            <label class="checkbox-row"><input type="checkbox" @bind="isTransitUsagePlanned" /><span>Transit usage planned</span></label>
-                            <label class="checkbox-row"><input type="checkbox" @bind="isNoLocalAlternative" /><span>No local alternative available</span></label>
-                            <label class="checkbox-row"><input type="checkbox" @bind="isPayUnicardUsagePlanned" /><span>PayUnicard usage planned</span></label>
                         </div>
                         <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!CanGoStep3)">Next</button></div>
                     </div>
@@ -134,26 +162,185 @@
                 else if (wizardStep == 5)
                 {
                     <div class="wizard-content-shell">
-                        <div class="summary-card"><div><strong>Name:</strong> @($"{kycData?.FirstName} {kycData?.LastName}".Trim())</div><div><strong>Birth Date:</strong> @kycData?.BirthDate</div><div><strong>Nationality:</strong> @kycData?.Nationality</div><div><strong>Document Type:</strong> @kycData?.DocumetType</div><div><strong>Document Number:</strong> @kycData?.DocumentNumber</div></div>
+                        <div class="summary-card">
+                            <div><strong>Document Type:</strong> @documentType</div>
+                            <div><strong>Document Number:</strong> @documentNumber</div>
+                            <div><strong>Personal Number:</strong> @personalNumber</div>
+                        </div>
                         <div class="form-stack">
-                            <div class="field"><label for="dualCitizen">Dual Citizen</label><select id="dualCitizen" @bind="dualCitizen"><option value="0">No</option><option value="1">Yes</option></select></div>
+                            <div class="field">
+                                <label for="documentType">Document Type</label>
+                                <input id="documentType" value="@documentType" disabled />
+                            </div>
+                            <div class="field">
+                                <label for="documentNumber">Document Number</label>
+                                <input id="documentNumber" value="@documentNumber" disabled />
+                            </div>
+                            <div class="field">
+                                <label for="personalNumber">Personal Number</label>
+                                <input id="personalNumber" @bind="personalNumber" @bind:event="oninput" class="@(RequiresPersonalNumber && !IsPersonalNumberValid ? "error" : string.Empty)" />
+                                @if (RequiresPersonalNumber && !IsPersonalNumberValid)
+                                {
+                                    <div class="field-error">Personal number must contain 11 digits.</div>
+                                }
+                            </div>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="issueDate">Issue Date</label>
+                                    <input id="issueDate" type="date" value="@IssueDateInputValue" @onchange="OnIssueDateChanged" />
+                                </div>
+                                <div class="field">
+                                    <label for="expirationDate">Expiration Date</label>
+                                    <input id="expirationDate" type="date" value="@ExpirationDateInputValue" @onchange="OnExpirationDateChanged" />
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="documentIssuingCountry">Document Issuing Country</label>
+                                <select id="documentIssuingCountry" @bind="documentIssuingCountry">
+                                    <option value="">Select country</option>
+                                    @foreach (var country in countries)
+                                    {
+                                        <option value="@country.CountryID">@country.CountryName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="firstName">First Name</label>
+                                <input id="firstName" value="@KycFirstName" disabled />
+                            </div>
+                            <div class="field">
+                                <label for="lastName">Last Name</label>
+                                <input id="lastName" value="@KycLastName" disabled />
+                            </div>
+                            <div class="field">
+                                <label for="citizenshipCountry">Citizenship</label>
+                                <select id="citizenshipCountry" @bind="citizenshipCountry">
+                                    <option value="">Select country</option>
+                                    @foreach (var country in countries)
+                                    {
+                                        <option value="@country.CountryID">@country.CountryName</option>
+                                    }
+                                </select>
+                            </div>
+                            @if (!IsGeorgianCitizenship && !string.IsNullOrWhiteSpace(citizenshipCountry))
+                            {
+                                <div class="field">
+                                    <label for="transitPurpose">Transit purpose planned</label>
+                                    <select id="transitPurpose" value="@TransitPurposeValue" @onchange="OnTransitPurposeChanged">
+                                        <option value="">Select option</option>
+                                        <option value="true">Yes</option>
+                                        <option value="false">No</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Usage Purposes</label>
+                                    <div class="purpose-list">
+                                        @foreach (var purpose in usagePurposes)
+                                        {
+                                            <label class="checkbox-card">
+                                                <input type="checkbox" checked="@selectedPurposes.Contains(purpose.UsageID)" @onchange="args => TogglePurpose(purpose.UsageID, (bool?)args.Value == true)" />
+                                                <span>@purpose.UsagePurposeText</span>
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            <div class="field">
+                                <label for="birthCountry">Birth Country</label>
+                                <select id="birthCountry" @bind="birthCountry">
+                                    <option value="">Select country</option>
+                                    @foreach (var country in countries)
+                                    {
+                                        <option value="@country.CountryID">@country.CountryName</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="birthCity">Birth City</label>
+                                <input id="birthCity" @bind="birthCity" />
+                            </div>
+                            <div class="field">
+                                <label for="birthDate">Birth Date</label>
+                                <input id="birthDate" type="date" value="@BirthDateInputValue" @onchange="OnBirthDateChanged" />
+                            </div>
+                            <div class="field">
+                                <label>Sex</label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="sex" value="female" checked="@string.Equals(sex, "female", StringComparison.OrdinalIgnoreCase)" @onchange="OnSexChanged" />
+                                        <span>Female</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="sex" value="male" checked="@string.Equals(sex, "male", StringComparison.OrdinalIgnoreCase)" @onchange="OnSexChanged" />
+                                        <span>Male</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <label for="dualCitizen">Dual Citizen</label>
+                                <select id="dualCitizen" @bind="dualCitizen">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
                             @if (dualCitizen == 1)
                             {
-                                <div class="field"><label for="secondCitizenship">Second Citizenship Country</label><select id="secondCitizenship" @bind="secondCitizenshipCountry"><option value="0">Select country</option>@foreach (var country in countries){<option value="@country.CountryID">@country.CountryName</option>}</select></div>
+                                <div class="field">
+                                    <label for="secondCitizenship">Second Citizenship Country</label>
+                                    <select id="secondCitizenship" @bind="secondCitizenshipCountry">
+                                        <option value="0">Select country</option>
+                                        @foreach (var country in countries)
+                                        {
+                                            <option value="@country.CountryID">@country.CountryName</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                            @if (Environment.IsMockMode && AdditionalBlockingReasons.Count > 0)
+                            {
+                                <div class="form-helper">
+                                    <strong>Still missing:</strong>
+                                    <ul>
+                                        @foreach (var reason in AdditionalBlockingReasons)
+                                        {
+                                            <li>@reason</li>
+                                        }
+                                    </ul>
+                                </div>
                             }
                         </div>
-                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync">Next</button></div>
+                        <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="NextStepAsync" disabled="@(!CanGoStep5)">Next</button></div>
                     </div>
                 }
                 else
                 {
                     <div class="wizard-content-shell">
-                        <div class="review-grid">
-                            <div class="summary-card"><strong>Address</strong><div>@LegalCountryName</div><div>@legalCity</div><div>@legalAddress</div><div>@legalPostal</div></div>
-                            <div class="summary-card"><strong>Employment</strong><div>@GetEmploymentStatusLabel(empStatus)</div><div>@GetWorkTypeLabel(workType)</div><div>@employer</div><div>@workPosition</div></div>
-                            <div class="summary-card"><strong>Bank Relationship</strong><div>Turnover: @GetTurnoverLabel(expectedTurnover)</div><div>Annual income: @annualIncome</div><div>Transaction types: @SelectedTransactionTypeSummary</div><div>Usage purposes: @SelectedUsagePurposeSummary</div></div>
-                            <div class="summary-card"><strong>KYC</strong><div>Name: @($"{kycData?.FirstName} {kycData?.LastName}".Trim())</div><div>Document: @kycData?.DocumentNumber</div><div>Citizenship: @kycData?.CountryName</div><div>Status: @(kycDone ? "Completed" : "Pending")</div></div>
+                        <div class="summary-card">
+                            <div><strong>Document Type:</strong> @documentType</div>
+                            <div><strong>Personal Number:</strong> @personalNumber</div>
+                            <div><strong>Name:</strong> @($"{KycFirstName} {KycLastName}".Trim())</div>
+                            <div><strong>Birth Date:</strong> @BirthDateDisplay</div>
                         </div>
+                        <div class="doc-shell">
+                            <p class="doc-title">Uploaded documents</p>
+                            <div class="doc-grid">
+                                @if (!string.IsNullOrWhiteSpace(DocumentFrontDisplay))
+                                {
+                                    <img src="@DocumentFrontDisplay" alt="Document front" class="doc-image" />
+                                }
+                                @if (IsIdDocument && !string.IsNullOrWhiteSpace(DocumentBackDisplay))
+                                {
+                                    <img src="@DocumentBackDisplay" alt="Document back" class="doc-image" />
+                                }
+                            </div>
+                        </div>
+                        <label class="checkbox-row">
+                            <input type="checkbox" @bind="agreeFinalTerms" />
+                            <span>
+                                I agree to the
+                                <a href="/info-page/terms-of-use?open=0" target="_blank" rel="noreferrer"> terms of service</a>.
+                            </span>
+                        </label>
                         @if (submitSuccess)
                         {
                             <div class="alert alert-success">Registration submitted successfully.</div>
@@ -161,7 +348,7 @@
                         }
                         else
                         {
-                            <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="SubmitAllAsync" disabled="@loading">@if (loading){<span class="spinner"></span>}<span>Submit Application</span></button></div>
+                            <div class="button-row"><button class="btn btn-outline" type="button" @onclick="PrevStep">Back</button><button class="btn btn-primary" type="button" @onclick="SubmitAllAsync" disabled="@(!CanSubmit)">@if (loading){<span class="spinner"></span>}<span>Submit Application</span></button></div>
                         }
                     </div>
                 }
@@ -171,10 +358,16 @@
 </div>
 
 @code {
+    private const int GeorgiaCountryId = 79;
     private int wizardStep = 1;
-    private bool loading, submitSuccess, hasStarted, sameAsLegal = true, kycDone, kycLoading, isPartnerSelected, isTransitUsagePlanned, isNoLocalAlternative, isPayUnicardUsagePlanned, identificationStartedNotified;
+    private bool loading, submitSuccess, hasStarted, sameAsLegal = true, kycDone, kycLoading, identificationStartedNotified, additionalDataPrefilled, agreeFinalTerms, customerRegistrationSubmitted;
+    private bool? isTransitPurpose;
     private int dualCitizen, secondCitizenshipCountry;
-    private string errorMsg = string.Empty, legalCountry = string.Empty, legalCity = string.Empty, legalAddress = string.Empty, legalPostal = string.Empty, factCountry = string.Empty, factCity = string.Empty, factAddress = string.Empty, factPostal = string.Empty, empStatus = string.Empty, workType = string.Empty, employer = string.Empty, workPosition = string.Empty, expectedTurnover = string.Empty, annualIncome = string.Empty, kycSessionId = string.Empty, kycListenerId = string.Empty;
+    private DateOnly? issueDateValue;
+    private DateOnly? expirationDateValue;
+    private DateOnly? birthDateValue;
+    private string errorMsg = string.Empty, legalCountry = string.Empty, legalCity = string.Empty, legalAddress = string.Empty, legalPostal = string.Empty, factCountry = string.Empty, factCity = string.Empty, factAddress = string.Empty, factPostal = string.Empty, empStatus = string.Empty, workType = string.Empty, employer = string.Empty, workPosition = string.Empty, expectedTurnover = string.Empty, annualIncomeId = string.Empty, kycSessionId = string.Empty, kycListenerId = string.Empty;
+    private string documentNumber = string.Empty, personalNumber = string.Empty, documentIssuingCountry = string.Empty, citizenshipCountry = string.Empty, birthCountry = string.Empty, birthCity = string.Empty, documentType = string.Empty, sex = "female";
     private string? kycFrameUrl;
     private IDisposable? kycCallbackReference;
     private CloseSessionResponse? kycData;
@@ -189,8 +382,29 @@
     private List<int> selectedPurposes = [];
 
     private bool CanGoStep1 => !string.IsNullOrWhiteSpace(legalCountry) && !string.IsNullOrWhiteSpace(legalCity) && !string.IsNullOrWhiteSpace(legalAddress) && !string.IsNullOrWhiteSpace(legalPostal) && (sameAsLegal || (!string.IsNullOrWhiteSpace(factCountry) && !string.IsNullOrWhiteSpace(factCity) && !string.IsNullOrWhiteSpace(factAddress) && !string.IsNullOrWhiteSpace(factPostal)));
-    private bool CanGoStep2 => !string.IsNullOrWhiteSpace(empStatus) && !string.IsNullOrWhiteSpace(workType);
-    private bool CanGoStep3 => !string.IsNullOrWhiteSpace(expectedTurnover) && !string.IsNullOrWhiteSpace(annualIncome) && selectedTransactionTypes.Count > 0;
+    private bool IsEmployed => string.Equals(empStatus, "Employed", StringComparison.OrdinalIgnoreCase);
+    private bool IsSelfEmployed => workType.Contains("Self", StringComparison.OrdinalIgnoreCase) || workType.Contains("Self-employed", StringComparison.OrdinalIgnoreCase);
+    private bool CanGoStep2 => !string.IsNullOrWhiteSpace(empStatus)
+        && (!IsEmployed || !string.IsNullOrWhiteSpace(workType))
+        && (!IsEmployed || IsSelfEmployed || (!string.IsNullOrWhiteSpace(employer) && !string.IsNullOrWhiteSpace(workPosition)));
+    private bool CanGoStep3 => !string.IsNullOrWhiteSpace(expectedTurnover) && !string.IsNullOrWhiteSpace(annualIncomeId) && selectedTransactionTypes.Count > 0;
+    private bool IsGeorgianCitizenship => ParseNullableInt(citizenshipCountry) == GeorgiaCountryId;
+    private bool IsIdDocument => IsDocumentTypeId(documentType);
+    private bool RequiresPersonalNumber => IsGeorgianCitizenship || IsIdDocument;
+    private bool CanGoStep5 =>
+        !string.IsNullOrWhiteSpace(documentNumber)
+        && (!RequiresPersonalNumber || IsPersonalNumberValid)
+        && issueDateValue is not null
+        && expirationDateValue is not null
+        && !string.IsNullOrWhiteSpace(documentIssuingCountry)
+        && !string.IsNullOrWhiteSpace(citizenshipCountry)
+        && !string.IsNullOrWhiteSpace(birthCountry)
+        && !string.IsNullOrWhiteSpace(birthCity)
+        && birthDateValue is not null
+        && !string.IsNullOrWhiteSpace(sex)
+        && (dualCitizen == 0 || secondCitizenshipCountry > 0)
+        && (IsGeorgianCitizenship || (isTransitPurpose is not null && selectedPurposes.Count > 0));
+    private bool CanSubmit => agreeFinalTerms && !loading;
     private string CurrentStepTitle => wizardStep switch { 1 => "Legal Address", 2 => "Employment", 3 => "Relationship with Bank", 4 => "Identification", 5 => "Additional Data", _ => "Check Data" };
     private string CurrentStepSubtitle => wizardStep switch { 1 => "Please enter your legal address. If your factual address is different, add it as well.", 2 => "Tell us about your current employment situation.", 3 => "This information is required for compliance review.", 4 => "Complete document scanning and selfie verification.", 5 => "Review the data received from KYC and add any missing details.", _ => "Confirm all information before final submission." };
     private string LegalCountryName => GetCountryName(legalCountry);
@@ -226,6 +440,15 @@
 
             annualIncomes = (await incomeTask)?.ExpectedAnnualIncomes ?? [];
             usagePurposes = (await purposeTask)?.CustomerUsagePurposes ?? [];
+
+            EnsureCountryDefaults();
+
+            if (State.KycData is not null)
+            {
+                kycData = State.KycData;
+                kycDone = true;
+                ApplyKycDefaults(kycData);
+            }
         }
         catch (Exception ex)
         {
@@ -261,6 +484,9 @@
         hasStarted = false;
         wizardStep = 1;
         errorMsg = string.Empty;
+        customerRegistrationSubmitted = false;
+        submitSuccess = false;
+        agreeFinalTerms = false;
     }
 
     private void PrevStep()
@@ -278,6 +504,12 @@
 
         if (wizardStep == 3)
         {
+            var submitted = await SubmitCustomerRegistrationAsync();
+            if (!submitted)
+            {
+                return;
+            }
+
             await OpenKycSessionAsync();
         }
 
@@ -330,6 +562,14 @@
             kycFrameUrl = session?.FrameUrl;
             kycSessionId = session?.SessionId ?? string.Empty;
             State.KycData = null;
+            additionalDataPrefilled = false;
+            documentType = string.Empty;
+            documentNumber = string.Empty;
+            personalNumber = string.Empty;
+            issueDateValue = null;
+            expirationDateValue = null;
+            birthDateValue = null;
+            sex = "female";
 
             if (session?.SkipKycSession == true)
             {
@@ -337,6 +577,10 @@
                 kycData = data?.Data.FirstOrDefault() is { } existingData ? ToCloseSessionData(existingData) : null;
                 State.KycData = kycData;
                 kycDone = kycData is not null;
+                if (kycData is not null)
+                {
+                    ApplyKycDefaults(kycData);
+                }
                 return;
             }
 
@@ -373,6 +617,10 @@
             kycData = result;
             State.KycData = result;
             kycDone = result is not null;
+            if (result is not null)
+            {
+                ApplyKycDefaults(result);
+            }
             await IframeInterop.NotifyParentAsync("identification.kyc.completed", new { sessionId = kycSessionId, source = sourceDescription });
         }
         catch (Exception ex)
@@ -388,68 +636,49 @@
 
         try
         {
-            var customerRegistration = new CustomerRegistrationRequest
+            if (!customerRegistrationSubmitted)
             {
-                LegalCountryID = ParseNullableInt(legalCountry),
-                LegalCity = legalCity.Trim(),
-                LegalAddress = legalAddress.Trim(),
-                LegalPostalCode = legalPostal.Trim(),
-                FactCountryID = sameAsLegal ? ParseNullableInt(legalCountry) : ParseNullableInt(factCountry),
-                FactCity = sameAsLegal ? legalCity.Trim() : factCity.Trim(),
-                FactAddress = sameAsLegal ? legalAddress.Trim() : factAddress.Trim(),
-                FactPostalCode = sameAsLegal ? legalPostal.Trim() : factPostal.Trim(),
-                Employer = employer.Trim(),
-                EmploymentStatusCode = empStatus,
-                EmploymentTypeCode = workType,
-                WorkPosition = workPosition.Trim(),
-                ExpectedTurnoverCode = expectedTurnover,
-                ExpectedAnualIncomeCode = annualIncome,
-                ExpectedTransactionTypes = [.. selectedTransactionTypes],
-                DocumentRegisterCountryId = kycData?.DocumentIssuingCountryID,
-                IsTransitUsagePlanned = isTransitUsagePlanned,
-                IsPartnerSelected = isPartnerSelected,
-                IsGeorgiaSelected = State.PreRegistration.CitizenshipCountryID == 1,
-                IsNoLocalAlternative = isNoLocalAlternative,
-                IsPayUnicardUsagePlanned = isPayUnicardUsagePlanned
-            };
+                var submitted = await SubmitCustomerRegistrationAsync();
+                if (!submitted)
+                {
+                    return;
+                }
+            }
 
-            State.Customer = customerRegistration;
-            await UserService.CustomerRegistrationAsync(customerRegistration);
-
-            if (State.PreRegistration.CitizenshipCountryID != 1)
+            if (!IsGeorgianCitizenship)
             {
                 await UserService.ChangeCustomerAsync(new ChangeCustomerRequest
                 {
-                    DocumentRegisterCountryId = kycData?.DocumentIssuingCountryID,
-                    ExpectedAnualIncomeCode = annualIncome,
-                    IsTransitUsagePlanned = isTransitUsagePlanned,
-                    IsPartnerSelected = isPartnerSelected,
-                    IsGeorgiaSelected = false,
-                    IsNoLocalAlternative = isNoLocalAlternative,
-                    IsPayUnicardUsagePlanned = isPayUnicardUsagePlanned
+                    DocumentRegisterCountryId = ParseNullableInt(documentIssuingCountry) ?? kycData?.DocumentIssuingCountryID,
+                    ExpectedAnualIncomeCode = annualIncomeId,
+                    IsTransitUsagePlanned = isTransitPurpose,
+                    IsPartnerSelected = selectedPurposes.Contains(1),
+                    IsGeorgiaSelected = selectedPurposes.Contains(2),
+                    IsNoLocalAlternative = selectedPurposes.Contains(3),
+                    IsPayUnicardUsagePlanned = selectedPurposes.Contains(4)
                 });
             }
 
             var finishRequest = new FinishCustomerRegistrationRequest
             {
-                DocumentType = string.IsNullOrWhiteSpace(kycData?.DocumetType) ? "ID_CARD" : kycData.DocumetType,
-                Name = kycData?.FirstName ?? State.PreRegistration.Name,
-                Surname = kycData?.LastName ?? State.PreRegistration.Surname,
-                PersonalID = kycData?.PersonalNumber ?? State.PreRegistration.PersonalId,
-                DocumentNumber = kycData?.DocumentNumber ?? string.Empty,
+                DocumentType = string.IsNullOrWhiteSpace(documentType) ? (kycData?.DocumetType ?? "ID_CARD") : documentType,
+                Name = KycFirstName,
+                Surname = KycLastName,
+                PersonalID = string.IsNullOrWhiteSpace(personalNumber) ? (kycData?.PersonalNumber ?? State.PreRegistration.PersonalId) : personalNumber,
+                DocumentNumber = string.IsNullOrWhiteSpace(documentNumber) ? (kycData?.DocumentNumber ?? string.Empty) : documentNumber,
                 DocumentFrontSide = kycData?.DocumentFrontSide ?? string.Empty,
                 DocumentFrontSideName = "front.jpg",
                 DocumentBackSide = kycData?.DocumentBackSide ?? string.Empty,
                 DocumentBackSideName = "back.jpg",
                 CustomerSelf = kycData?.SelfImages.FirstOrDefault() ?? string.Empty,
                 CustomerSelfName = "selfie.jpg",
-                Sex = ParseSex(kycData?.Sex),
-                BirthDate = kycData?.BirthDate ?? State.PreRegistration.BirthDate,
-                IssueDate = kycData?.IssueDate ?? string.Empty,
-                ValidTo = kycData?.ExpirationDate ?? string.Empty,
-                CitizenshipCountryID = kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
-                BirthCity = legalCity,
-                BirthCountryId = kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
+                Sex = ParseSex(sex),
+                BirthDate = birthDateValue?.ToString("yyyy-MM-dd") ?? kycData?.BirthDate ?? State.PreRegistration.BirthDate,
+                IssueDate = issueDateValue?.ToString("yyyy-MM-dd") ?? kycData?.IssueDate ?? string.Empty,
+                ValidTo = expirationDateValue?.ToString("yyyy-MM-dd") ?? kycData?.ExpirationDate ?? string.Empty,
+                CitizenshipCountryID = ParseNullableInt(citizenshipCountry) ?? kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
+                BirthCity = birthCity.Trim(),
+                BirthCountryId = ParseNullableInt(birthCountry) ?? kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
                 DualCitizen = dualCitizen,
                 SecondaryCitizenshipCountryID = secondCitizenshipCountry
             };
@@ -468,6 +697,359 @@
         }
     }
 
+    private async Task<bool> SubmitCustomerRegistrationAsync()
+    {
+        try
+        {
+            var customerRegistration = BuildCustomerRegistrationRequest();
+            State.Customer = customerRegistration;
+            var response = await UserService.CustomerRegistrationAsync(customerRegistration);
+            customerRegistrationSubmitted = response?.Success == true;
+            if (!customerRegistrationSubmitted)
+            {
+                errorMsg = "Customer registration failed. Please try again.";
+            }
+
+            return customerRegistrationSubmitted;
+        }
+        catch (Exception ex)
+        {
+            errorMsg = $"Customer registration failed: {ex.Message}";
+            return false;
+        }
+    }
+
+    private CustomerRegistrationRequest BuildCustomerRegistrationRequest()
+        => new()
+        {
+            LegalCountryID = ParseNullableInt(legalCountry),
+            LegalCity = legalCity.Trim(),
+            LegalAddress = legalAddress.Trim(),
+            LegalPostalCode = legalPostal.Trim(),
+            FactCountryID = sameAsLegal ? ParseNullableInt(legalCountry) : ParseNullableInt(factCountry),
+            FactCity = sameAsLegal ? legalCity.Trim() : factCity.Trim(),
+            FactAddress = sameAsLegal ? legalAddress.Trim() : factAddress.Trim(),
+            FactPostalCode = sameAsLegal ? legalPostal.Trim() : factPostal.Trim(),
+            Employer = employer.Trim(),
+            EmploymentStatusCode = empStatus,
+            EmploymentTypeCode = workType,
+            WorkPosition = workPosition.Trim(),
+            ExpectedTurnoverCode = expectedTurnover,
+            ExpectedAnualIncomeCode = annualIncomeId,
+            ExpectedTransactionTypes = [.. selectedTransactionTypes],
+            DocumentRegisterCountryId = ParseNullableInt(documentIssuingCountry) ?? kycData?.DocumentIssuingCountryID,
+            IsTransitUsagePlanned = IsGeorgianCitizenship ? null : isTransitPurpose,
+            IsPartnerSelected = selectedPurposes.Contains(1),
+            IsGeorgiaSelected = selectedPurposes.Contains(2),
+            IsNoLocalAlternative = selectedPurposes.Contains(3),
+            IsPayUnicardUsagePlanned = selectedPurposes.Contains(4)
+        };
+
+    private void OnEmploymentStatusChanged()
+    {
+        if (!IsEmployed)
+        {
+            workType = string.Empty;
+            employer = string.Empty;
+            workPosition = string.Empty;
+            return;
+        }
+
+        if (IsSelfEmployed)
+        {
+            employer = string.Empty;
+            workPosition = string.Empty;
+        }
+    }
+
+    private void OnWorkTypeChanged()
+    {
+        if (IsSelfEmployed)
+        {
+            employer = string.Empty;
+            workPosition = string.Empty;
+        }
+    }
+
+    private void OnIssueDateChanged(ChangeEventArgs args)
+    {
+        issueDateValue = DateOnly.TryParse(args.Value?.ToString(), out var parsedDate) ? parsedDate : null;
+    }
+
+    private void OnExpirationDateChanged(ChangeEventArgs args)
+    {
+        expirationDateValue = DateOnly.TryParse(args.Value?.ToString(), out var parsedDate) ? parsedDate : null;
+    }
+
+    private void OnBirthDateChanged(ChangeEventArgs args)
+    {
+        birthDateValue = DateOnly.TryParse(args.Value?.ToString(), out var parsedDate) ? parsedDate : null;
+    }
+
+    private void OnSexChanged(ChangeEventArgs args)
+    {
+        sex = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void OnTransitPurposeChanged(ChangeEventArgs args)
+    {
+        var value = args.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            isTransitPurpose = null;
+            return;
+        }
+
+        isTransitPurpose = string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void EnsureCountryDefaults()
+    {
+        if (countries.Count == 0)
+        {
+            return;
+        }
+
+        var preferredId = countries.Any(country => country.CountryID == State.PreRegistration.CitizenshipCountryID)
+            ? State.PreRegistration.CitizenshipCountryID
+            : countries[0].CountryID;
+
+        if (string.IsNullOrWhiteSpace(citizenshipCountry))
+        {
+            citizenshipCountry = preferredId.ToString();
+        }
+
+        if (string.IsNullOrWhiteSpace(birthCountry))
+        {
+            birthCountry = preferredId.ToString();
+        }
+
+        if (string.IsNullOrWhiteSpace(documentIssuingCountry))
+        {
+            documentIssuingCountry = preferredId.ToString();
+        }
+    }
+
+    private void ApplyKycDefaults(CloseSessionResponse data)
+    {
+        if (additionalDataPrefilled)
+        {
+            return;
+        }
+
+        documentType = string.IsNullOrWhiteSpace(documentType) ? data.DocumetType : documentType;
+        documentNumber = string.IsNullOrWhiteSpace(documentNumber) ? data.DocumentNumber : documentNumber;
+        personalNumber = string.IsNullOrWhiteSpace(personalNumber) ? data.PersonalNumber : personalNumber;
+
+        issueDateValue ??= ParseDateOnly(data.IssueDate) ?? ParseDateOnly(data.IssueDateTime);
+        expirationDateValue ??= ParseDateOnly(data.ExpirationDate);
+        birthDateValue ??= ParseDateOnly(data.BirthDate);
+
+        if (string.IsNullOrWhiteSpace(citizenshipCountry) && data.CountryID > 0)
+        {
+            citizenshipCountry = data.CountryID.ToString();
+        }
+
+        if (string.IsNullOrWhiteSpace(documentIssuingCountry) && data.DocumentIssuingCountryID is not null)
+        {
+            documentIssuingCountry = data.DocumentIssuingCountryID.Value.ToString();
+        }
+
+        if (string.IsNullOrWhiteSpace(birthCountry) && data.CountryID > 0)
+        {
+            birthCountry = data.CountryID.ToString();
+        }
+
+        if (string.IsNullOrWhiteSpace(birthCity))
+        {
+            birthCity = legalCity;
+        }
+
+        sex = NormalizeSex(data.Sex);
+        additionalDataPrefilled = true;
+    }
+
+    private string KycFirstName => string.IsNullOrWhiteSpace(kycData?.FirstName) ? State.PreRegistration.Name : kycData.FirstName;
+
+    private string KycLastName => string.IsNullOrWhiteSpace(kycData?.LastName) ? State.PreRegistration.Surname : kycData.LastName;
+
+    private string IssueDateInputValue => issueDateValue?.ToString("yyyy-MM-dd") ?? string.Empty;
+
+    private string ExpirationDateInputValue => expirationDateValue?.ToString("yyyy-MM-dd") ?? string.Empty;
+
+    private string BirthDateInputValue => birthDateValue?.ToString("yyyy-MM-dd") ?? string.Empty;
+
+    private string BirthDateDisplay => birthDateValue?.ToString("yyyy-MM-dd")
+        ?? ParseDateOnly(kycData?.BirthDate)?.ToString("yyyy-MM-dd")
+        ?? string.Empty;
+
+    private string TransitPurposeValue => isTransitPurpose is null ? string.Empty : (isTransitPurpose.Value ? "true" : "false");
+
+    private bool IsPersonalNumberValid
+    {
+        get
+        {
+            if (!RequiresPersonalNumber)
+            {
+                return true;
+            }
+
+            if (string.IsNullOrWhiteSpace(personalNumber))
+            {
+                return false;
+            }
+
+            var trimmed = personalNumber.Trim();
+            if (IsGeorgianCitizenship)
+            {
+                return trimmed.Length == 11 && trimmed.All(char.IsDigit);
+            }
+
+            return trimmed.Length > 0;
+        }
+    }
+
+    private List<string> AdditionalBlockingReasons => GetAdditionalBlockingReasons();
+
+    private List<string> GetAdditionalBlockingReasons()
+    {
+        var reasons = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(documentNumber))
+        {
+            reasons.Add("Document number is required.");
+        }
+
+        if (RequiresPersonalNumber && !IsPersonalNumberValid)
+        {
+            reasons.Add("Personal number must contain 11 digits.");
+        }
+
+        if (issueDateValue is null)
+        {
+            reasons.Add("Issue date is required.");
+        }
+
+        if (expirationDateValue is null)
+        {
+            reasons.Add("Expiration date is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(documentIssuingCountry))
+        {
+            reasons.Add("Document issuing country is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(citizenshipCountry))
+        {
+            reasons.Add("Citizenship is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(birthCountry))
+        {
+            reasons.Add("Birth country is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(birthCity))
+        {
+            reasons.Add("Birth city is required.");
+        }
+
+        if (birthDateValue is null)
+        {
+            reasons.Add("Birth date is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(sex))
+        {
+            reasons.Add("Sex is required.");
+        }
+
+        if (dualCitizen == 1 && secondCitizenshipCountry <= 0)
+        {
+            reasons.Add("Second citizenship country is required.");
+        }
+
+        if (!IsGeorgianCitizenship)
+        {
+            if (isTransitPurpose is null)
+            {
+                reasons.Add("Transit purpose selection is required.");
+            }
+
+            if (selectedPurposes.Count == 0)
+            {
+                reasons.Add("Select at least one usage purpose.");
+            }
+        }
+
+        return reasons;
+    }
+
+    private string DocumentFrontDisplay => NormalizeImageSource(kycData?.DocumentFrontSide);
+
+    private string DocumentBackDisplay => NormalizeImageSource(kycData?.DocumentBackSide);
+
+    private static string NormalizeImageSource(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        if (value.StartsWith("data:", StringComparison.OrdinalIgnoreCase)
+            || value.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+            || value.StartsWith("blob:", StringComparison.OrdinalIgnoreCase))
+        {
+            return value;
+        }
+
+        return $"data:image/jpeg;base64,{value}";
+    }
+
+    private static string NormalizeSex(string? value)
+    {
+        if (string.Equals(value, "male", StringComparison.OrdinalIgnoreCase) || value == "1")
+        {
+            return "male";
+        }
+
+        if (string.Equals(value, "female", StringComparison.OrdinalIgnoreCase) || value == "0")
+        {
+            return "female";
+        }
+
+        return "female";
+    }
+
+    private static bool IsDocumentTypeId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var normalized = value.Replace("-", "_", StringComparison.OrdinalIgnoreCase).Trim().ToUpperInvariant();
+        return normalized is "ID" or "ID_CARD" or "IDCARD";
+    }
+
+    private static DateOnly? ParseDateOnly(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        if (DateOnly.TryParse(value, out var parsed))
+        {
+            return parsed;
+        }
+
+        return DateTime.TryParse(value, out var dateTime)
+            ? DateOnly.FromDateTime(dateTime)
+            : null;
+    }
+
     private string GetCountryName(string? countryId)
         => countries.FirstOrDefault(country => country.CountryID.ToString() == countryId)?.CountryName ?? "Not selected";
 
@@ -479,6 +1061,9 @@
 
     private string GetTurnoverLabel(string? turnoverCode)
         => turnoverTypes.FirstOrDefault(type => type.ExpectedTurnoverCode == turnoverCode)?.ExpectedTurnover ?? "Not selected";
+
+    private string GetAnnualIncomeLabel(string? incomeId)
+        => annualIncomes.FirstOrDefault(income => income.ExpectedAnnualIncomeId.ToString() == incomeId)?.ExpectedAnnualIncomeCode ?? "Not selected";
 
     private static int? ParseNullableInt(string? value)
         => int.TryParse(value, out var parsed) ? parsed : null;

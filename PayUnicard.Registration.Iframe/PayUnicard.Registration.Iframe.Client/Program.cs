@@ -11,29 +11,28 @@ builder.Services.Configure<GoogleRecaptchaOptions>(builder.Configuration.GetSect
 builder.Services.Configure<IframeOptions>(builder.Configuration.GetSection("Iframe"));
 builder.Services.AddScoped<IAppEnvironmentService, AppEnvironmentService>();
 builder.Services.AddScoped<IIframeInteropService, IframeInteropService>();
+builder.Services.AddScoped<IMockModeService, MockModeService>();
 
 var walletApiOptions = builder.Configuration.GetSection("WalletApi").Get<WalletApiOptions>() ?? new WalletApiOptions();
-var appOptions = builder.Configuration.GetSection("App").Get<AppOptions>() ?? new AppOptions();
 
 builder.Services.AddScoped(_ => new HttpClient
 {
     BaseAddress = new Uri(walletApiOptions.BaseUrl)
 });
 
-if (appOptions.UseMockServices)
-{
-    builder.Services.AddScoped<IUserService, MockUserService>();
-    builder.Services.AddScoped<IOtpService, MockOtpService>();
-    builder.Services.AddScoped<IKycService, MockKycService>();
-    builder.Services.AddScoped<IPresentationService, MockPresentationService>();
-}
-else
-{
-    builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<IOtpService, OtpService>();
-    builder.Services.AddScoped<IKycService, KycService>();
-    builder.Services.AddScoped<IPresentationService, PresentationService>();
-}
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<OtpService>();
+builder.Services.AddScoped<KycService>();
+builder.Services.AddScoped<PresentationService>();
+builder.Services.AddScoped<MockUserService>();
+builder.Services.AddScoped<MockOtpService>();
+builder.Services.AddScoped<MockKycService>();
+builder.Services.AddScoped<MockPresentationService>();
+
+builder.Services.AddScoped<IUserService, UserServiceRouter>();
+builder.Services.AddScoped<IOtpService, OtpServiceRouter>();
+builder.Services.AddScoped<IKycService, KycServiceRouter>();
+builder.Services.AddScoped<IPresentationService, PresentationServiceRouter>();
 
 builder.Services.AddScoped<PayUnicard.Registration.Iframe.Client.Services.RegistrationState>();
 builder.Services.AddBlazoredLocalStorage();

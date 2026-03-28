@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "PayUnicard.Registration.Iframe.Client",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-yc3F7eyYU0X0e2snGC5u8OfdAcEv6jLQ0h7KSGFDmtA=",
+    "hash": "sha256-30AXaZPE1q1FcOtSDaxPyLTZV5QhKw/z40QasTimoeo=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.ykrnppwhq2.js"
@@ -1260,16 +1260,16 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "PayUnicard.Registration.Iframe.Client.wasm",
-        "name": "PayUnicard.Registration.Iframe.Client.hfmrroni1m.wasm",
-        "integrity": "sha256-TfW6RhuRGDB9gW3tUKoqFDHMFJCsq4mxp+D5kG1RTx0=",
+        "name": "PayUnicard.Registration.Iframe.Client.kcmcufn8tn.wasm",
+        "integrity": "sha256-JOZupcANm0kADtcGvueJIC7OClfnBh7ijp3LjMRr1jg=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "PayUnicard.Registration.Iframe.Client.pdb",
-        "name": "PayUnicard.Registration.Iframe.Client.wfmybzmqjm.pdb",
-        "integrity": "sha256-5CKAv/KcK+3kK4x+w8ISuMjtiLW5njBCz8+oWu0bhdU=",
+        "name": "PayUnicard.Registration.Iframe.Client.zhkbnspns5.pdb",
+        "integrity": "sha256-h/MfxZBu0ScTew6Ym/m6b6bi3ftqt02EjOwCQZUlWmY=",
         "cache": "force-cache"
       }
     ],

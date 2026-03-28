@@ -103,11 +103,11 @@ C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\staticwebassets.development.json
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\staticwebassets.build.endpoints.json
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\swae.build.ex.cache
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\PayUnica.E206B14D.Up2Date
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\PayUnicard.Registration.Iframe.dll
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\refint\PayUnicard.Registration.Iframe.dll
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\PayUnicard.Registration.Iframe.pdb
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\PayUnicard.Registration.Iframe.genruntimeconfig.cache
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\ref\PayUnicard.Registration.Iframe.dll
-c:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\compressed\dk8wggiyh7-{0}-ulevxe9fnh-ulevxe9fnh.gz
-C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\obj\Debug\net10.0\compressed\dk8wggiyh7-{0}-nflw78zccc-nflw78zccc.gz

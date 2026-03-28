@@ -23,7 +23,7 @@
                 @if (Environment.IsMockMode)
                 {
                     <div class="alert alert-info">
-                        Development mode is enabled. OTP and KYC can run against mock services.
+                        Mock mode is enabled. OTP and KYC run against mock services.
                     </div>
                 }
 
@@ -196,6 +196,22 @@
                             <span>Sign up</span>
                         </button>
                     </div>
+                    @if (Environment.IsMockMode)
+                    {
+                        <button class="btn btn-outline btn-sm" type="button" @onclick="FillMockData">Use mock data</button>
+                    }
+                    @if (Environment.IsMockMode && BlockingReasons.Count > 0)
+                    {
+                        <div class="form-helper">
+                            <strong>Still disabled because:</strong>
+                            <ul>
+                                @foreach (var reason in BlockingReasons)
+                                {
+                                    <li>@reason</li>
+                                }
+                            </ul>
+                        </div>
+                    }
                 </div>
 
                 <p class="reg-footer-link">Already have an account? <a href="/iframe/login">Login</a></p>
@@ -282,7 +298,7 @@
     private readonly List<CitizenshipCountry> citizenshipCountries = [];
     private UserPreRegistrationRequest model = new()
     {
-        CitizenshipCountryID = 1,
+        CitizenshipCountryID = 0,
         IsApplyTerms = "1"
     };
 
@@ -342,6 +358,8 @@
         termsAccepted &&
         webTermsAccepted;
 
+    private List<string> BlockingReasons => GetBlockingReasons();
+
     protected override async Task OnInitializedAsync()
     {
         var query = ParseQuery(new Uri(Nav.Uri).Query);
@@ -354,7 +372,7 @@
             if (countries?.Countries is { Count: > 0 })
             {
                 citizenshipCountries.AddRange(countries.Countries);
-                if (model.CitizenshipCountryID == 0)
+                if (!citizenshipCountries.Any(country => country.CountryID == model.CitizenshipCountryID))
                 {
                     model.CitizenshipCountryID = citizenshipCountries[0].CountryID;
                 }
@@ -464,6 +482,30 @@
         confirmPasswordError = confirmPassword == model.Password ? string.Empty : "Passwords do not match.";
     }
 
+    private void FillMockData()
+    {
+        model.Name = "Mock";
+        model.Surname = "User";
+        model.UserName = "mock@example.com";
+        phoneNumber = "555123456";
+        selectedCountryCode = "+995";
+        birthDateValue = new DateOnly(1992, 4, 14);
+        model.CitizenshipCountryID = citizenshipCountries.FirstOrDefault()?.CountryID ?? 79;
+        model.PersonalId = "01001012345";
+        model.Password = "Test!123";
+        confirmPassword = "Test!123";
+        termsAccepted = true;
+        webTermsAccepted = true;
+        usernameError = false;
+        phoneError = false;
+        personalIdError = false;
+        errorMessage = string.Empty;
+        usernameMessage = string.Empty;
+        phoneMessage = string.Empty;
+        personalIdMessage = string.Empty;
+        confirmPasswordError = string.Empty;
+    }
+
     private async Task GoToOtpAsync()
     {
         errorMessage = string.Empty;
@@ -518,7 +560,7 @@
     {
         model = new UserPreRegistrationRequest
         {
-            CitizenshipCountryID = citizenshipCountries.FirstOrDefault()?.CountryID ?? 1,
+            CitizenshipCountryID = citizenshipCountries.FirstOrDefault()?.CountryID ?? 0,
             IsApplyTerms = "1"
         };
 
@@ -735,9 +777,9 @@
             return true;
         }
 
-        if (trimmedValue.Length is < 6 or > 20)
+        if (!trimmedValue.Any(char.IsDigit))
         {
-            error = "Passport number must be between 6 and 20 characters.";
+            error = "Passport number is required.";
             return false;
         }
 
@@ -752,7 +794,77 @@
            && password.Any(IsSupportedSpecialCharacter);
 
     private static bool IsSupportedSpecialCharacter(char value)
-        => "!#$%^&*()-_=+[]{};:,.?/\\|~".Contains(value);
+        => "!#$%^&*(){}[]':;<>,?~-/\\_+=|".Contains(value);
+
+    private List<string> GetBlockingReasons()
+    {
+        var reasons = new List<string>();
+
+        if (!ValidateName(model.Name, out var nameErr))
+        {
+            reasons.Add($"First name: {nameErr}");
+        }
+
+        if (!ValidateName(model.Surname, out var surnameErr))
+        {
+            reasons.Add($"Last name: {surnameErr}");
+        }
+
+        if (!ValidateEmail(model.UserName))
+        {
+            reasons.Add("Email is invalid.");
+        }
+
+        if (usernameError)
+        {
+            reasons.Add("Email is already registered.");
+        }
+
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            reasons.Add("Phone number is required.");
+        }
+        else if (phoneError)
+        {
+            reasons.Add("Phone number is already registered.");
+        }
+
+        if (!ValidateBirthDate(out var birthErr))
+        {
+            reasons.Add(birthErr);
+        }
+
+        if (!ValidatePersonalDocument(out var docErr))
+        {
+            reasons.Add(docErr);
+        }
+        else if (personalIdError)
+        {
+            reasons.Add("Personal document is already registered.");
+        }
+
+        if (!ValidatePassword(model.Password))
+        {
+            reasons.Add("Password does not meet complexity rules.");
+        }
+
+        if (confirmPassword != model.Password)
+        {
+            reasons.Add("Passwords do not match.");
+        }
+
+        if (!termsAccepted)
+        {
+            reasons.Add("Terms of service must be accepted.");
+        }
+
+        if (!webTermsAccepted)
+        {
+            reasons.Add("Web service terms must be accepted.");
+        }
+
+        return reasons;
+    }
 
     private static Dictionary<string, string> ParseQuery(string queryString)
     {

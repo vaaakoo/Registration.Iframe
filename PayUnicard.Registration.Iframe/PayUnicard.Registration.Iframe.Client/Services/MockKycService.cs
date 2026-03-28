@@ -4,15 +4,18 @@ namespace PayUnicard.Registration.Iframe.Client.Services;
 
 public class MockKycService : IKycService
 {
+    private const string SampleImageBase64 =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
     public Task CheckSessionLimitWebAsync() => Task.CompletedTask;
 
     public Task<OpenSessionResponse?> OpenSessionAsync()
     {
         return Task.FromResult<OpenSessionResponse?>(new OpenSessionResponse 
         { 
-            FrameUrl = "https://demo.kvalifika.com", 
-            SessionId = "mock-session-id", 
-            SkipKycSession = false 
+            FrameUrl = "https://demo.kvalifika.com",
+            SessionId = "mock-session-id",
+            SkipKycSession = false
         });
     }
 
@@ -22,14 +25,7 @@ public class MockKycService : IKycService
         { 
             Data = new List<KycData> 
             { 
-                new KycData 
-                { 
-                    FirstName = "John", 
-                    LastName = "Doe", 
-                    PersonalNumber = "01010101010", 
-                    Verified = true,
-                    Status = "Completed"
-                } 
+                BuildMockKycData()
             } 
         });
     }
@@ -38,10 +34,47 @@ public class MockKycService : IKycService
     {
         return Task.FromResult<CloseSessionResponse?>(new CloseSessionResponse 
         { 
-            FirstName = "John", 
-            LastName = "Doe", 
-            PersonalNumber = "01010101010", 
-            Verified = true 
+            FirstName = "Mock",
+            LastName = "User",
+            BirthDate = "1990-01-01T00:00:00",
+            ExpirationDate = "2030-12-31T00:00:00",
+            IssueDate = "2020-01-01T00:00:00",
+            IssueDateTime = "2020-01-01T00:00:00",
+            Sex = "male",
+            Nationality = "American",
+            DocumentNumber = "MOCK123456",
+            PersonalNumber = "01001012345",
+            DocumentFrontSide = SampleImageBase64,
+            DocumentBackSide = SampleImageBase64,
+            DocumetType = "ID",
+            SelfImages = new List<string> { SampleImageBase64 },
+            Verified = true,
+            Status = "SUCCESS",
+            CountryID = 840,
+            CountryName = "United States",
+            DocumentIssuingCountryID = 840
         });
     }
+
+    private static KycData BuildMockKycData()
+        => new()
+        {
+            FirstName = "Mock",
+            LastName = "User",
+            BirthDate = "1990/01/01",
+            ExpirationDate = "2030/12/31",
+            Sex = "male",
+            Nationality = "American",
+            DocumentNumber = "MOCK123456",
+            PersonalNumber = "01001012345",
+            DocumentFrontSide = SampleImageBase64,
+            DocumentBackSide = SampleImageBase64,
+            DocumetType = "ID",
+            SelfImages = new List<string> { SampleImageBase64 },
+            Verified = true,
+            Status = "SUCCESS",
+            CountryID = 840,
+            CountryName = "United States",
+            DocumentIssuingCountryID = 840
+        };
 }

@@ -404,6 +404,11 @@ a {
     margin-top: 32px;
 }
 
+.btn-sm {
+    min-height: 44px;
+    font-size: 14px;
+}
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -665,6 +670,48 @@ a {
     margin: 0;
 }
 
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.radio-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-main);
+}
+
+.radio-option input {
+    margin: 0;
+}
+
+.doc-shell {
+    margin-top: 24px;
+}
+
+.doc-title {
+    margin: 0 0 12px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.doc-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.doc-image {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 12px;
+    border: 1px solid #eaecf0;
+    background: #fff;
+}
+
 .review-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -739,6 +786,21 @@ a {
     margin-top: 20px;
     text-align: center;
     color: var(--text-muted);
+}
+
+.form-helper {
+    margin-top: 12px;
+    border-radius: 12px;
+    border: 1px dashed #eaecf0;
+    padding: 12px 14px;
+    background: #fcfcfd;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.form-helper ul {
+    margin: 8px 0 0 16px;
+    padding: 0;
 }
 
 .spinner {

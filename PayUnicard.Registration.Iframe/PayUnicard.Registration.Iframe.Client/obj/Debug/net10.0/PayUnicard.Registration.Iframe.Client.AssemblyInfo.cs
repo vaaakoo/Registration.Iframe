@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PayUnicard.Registration.Iframe.Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed179da957944a21f3ae41ca7a4560f67159049d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9c0c6bf87a93c2e2027b25a1c199c3efc9a2d3f8")]
 [assembly: System.Reflection.AssemblyProductAttribute("PayUnicard.Registration.Iframe.Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PayUnicard.Registration.Iframe.Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -20,6 +20,7 @@ builder.Services.AddScoped<IKycService, KycService>();
 builder.Services.AddScoped<IPresentationService, PresentationService>();
 builder.Services.AddScoped<IAppEnvironmentService, AppEnvironmentService>();
 builder.Services.AddScoped<IIframeInteropService, IframeInteropService>();
+builder.Services.AddScoped<IMockModeService, MockModeService>();
 builder.Services.AddScoped<RegistrationState>();
 
 var walletApiOptions = builder.Configuration.GetSection("WalletApi").Get<WalletApiOptions>() ?? new WalletApiOptions();
