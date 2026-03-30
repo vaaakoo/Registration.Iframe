@@ -1,9 +1,9 @@
-@page "/identification"
+@page "/iframe/identification"
 @rendermode InteractiveWebAssembly
 @implements IAsyncDisposable
 @inject IKycService KycService
 @inject IUserService UserService
-@inject IPresentationService PresentationService
+@inject IReferenceDataService ReferenceDataService
 @inject IIframeInteropService IframeInterop
 @inject IAppEnvironmentService Environment
 @inject NavigationManager Nav
@@ -413,20 +413,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrWhiteSpace(State.PreRegistration.UserName))
-        {
-            Nav.NavigateTo("/");
-            return;
-        }
-
         try
         {
-            var countriesTask = PresentationService.GetCitizenshipCountriesAsync();
-            var employmentTask = PresentationService.GetCustomerEmploymentStatusTypesAsync();
-            var workTask = PresentationService.GetCustomerWorkTypesAsync();
-            var turnoverTask = PresentationService.GetExpectedTransactionTypesAsync();
-            var incomeTask = PresentationService.GetCustomerAnnualIncomeTypesAsync();
-            var purposeTask = PresentationService.GetCustomerUsagePurposeAsync();
+            var countriesTask = ReferenceDataService.GetCitizenshipCountriesAsync();
+            var employmentTask = ReferenceDataService.GetCustomerEmploymentStatusTypesAsync();
+            var workTask = ReferenceDataService.GetCustomerWorkTypesAsync();
+            var turnoverTask = ReferenceDataService.GetExpectedTransactionTypesAsync();
+            var incomeTask = ReferenceDataService.GetCustomerAnnualIncomeTypesAsync();
+            var purposeTask = ReferenceDataService.GetCustomerUsagePurposeAsync();
 
             await Task.WhenAll(countriesTask, employmentTask, workTask, turnoverTask, incomeTask, purposeTask);
 
@@ -465,7 +459,7 @@
 
         try
         {
-            await IframeInterop.NotifyParentAsync("identification.started", new { username = State.PreRegistration.UserName });
+            await IframeInterop.NotifyParentAsync("identification.started");
             identificationStartedNotified = true;
         }
         catch (InvalidOperationException)
@@ -476,7 +470,7 @@
     private async Task StartIdentificationAsync()
     {
         hasStarted = true;
-        await IframeInterop.NotifyParentAsync("identification.start.clicked", new { username = State.PreRegistration.UserName });
+        await IframeInterop.NotifyParentAsync("identification.start.clicked");
     }
 
     private void ResetIdentification()
@@ -664,7 +658,7 @@
                 DocumentType = string.IsNullOrWhiteSpace(documentType) ? (kycData?.DocumetType ?? "ID_CARD") : documentType,
                 Name = KycFirstName,
                 Surname = KycLastName,
-                PersonalID = string.IsNullOrWhiteSpace(personalNumber) ? (kycData?.PersonalNumber ?? State.PreRegistration.PersonalId) : personalNumber,
+                PersonalID = string.IsNullOrWhiteSpace(personalNumber) ? (kycData?.PersonalNumber ?? string.Empty) : personalNumber,
                 DocumentNumber = string.IsNullOrWhiteSpace(documentNumber) ? (kycData?.DocumentNumber ?? string.Empty) : documentNumber,
                 DocumentFrontSide = kycData?.DocumentFrontSide ?? string.Empty,
                 DocumentFrontSideName = "front.jpg",
@@ -673,19 +667,19 @@
                 CustomerSelf = kycData?.SelfImages.FirstOrDefault() ?? string.Empty,
                 CustomerSelfName = "selfie.jpg",
                 Sex = ParseSex(sex),
-                BirthDate = birthDateValue?.ToString("yyyy-MM-dd") ?? kycData?.BirthDate ?? State.PreRegistration.BirthDate,
+                BirthDate = birthDateValue?.ToString("yyyy-MM-dd") ?? kycData?.BirthDate ?? string.Empty,
                 IssueDate = issueDateValue?.ToString("yyyy-MM-dd") ?? kycData?.IssueDate ?? string.Empty,
                 ValidTo = expirationDateValue?.ToString("yyyy-MM-dd") ?? kycData?.ExpirationDate ?? string.Empty,
-                CitizenshipCountryID = ParseNullableInt(citizenshipCountry) ?? kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
+                CitizenshipCountryID = ParseNullableInt(citizenshipCountry) ?? kycData?.CountryID ?? 79,
                 BirthCity = birthCity.Trim(),
-                BirthCountryId = ParseNullableInt(birthCountry) ?? kycData?.CountryID ?? State.PreRegistration.CitizenshipCountryID,
+                BirthCountryId = ParseNullableInt(birthCountry) ?? kycData?.CountryID ?? 79,
                 DualCitizen = dualCitizen,
                 SecondaryCitizenshipCountryID = secondCitizenshipCountry
             };
 
             await UserService.FinishCustomerRegistrationAsync(finishRequest);
             submitSuccess = true;
-            await IframeInterop.NotifyParentAsync("registration.completed", new { username = State.PreRegistration.UserName });
+            await IframeInterop.NotifyParentAsync("registration.completed");
         }
         catch (Exception ex)
         {
@@ -810,9 +804,7 @@
             return;
         }
 
-        var preferredId = countries.Any(country => country.CountryID == State.PreRegistration.CitizenshipCountryID)
-            ? State.PreRegistration.CitizenshipCountryID
-            : countries[0].CountryID;
+        var preferredId = countries[0].CountryID;
 
         if (string.IsNullOrWhiteSpace(citizenshipCountry))
         {
@@ -869,9 +861,9 @@
         additionalDataPrefilled = true;
     }
 
-    private string KycFirstName => string.IsNullOrWhiteSpace(kycData?.FirstName) ? State.PreRegistration.Name : kycData.FirstName;
+    private string KycFirstName => string.IsNullOrWhiteSpace(kycData?.FirstName) ? string.Empty : kycData.FirstName;
 
-    private string KycLastName => string.IsNullOrWhiteSpace(kycData?.LastName) ? State.PreRegistration.Surname : kycData.LastName;
+    private string KycLastName => string.IsNullOrWhiteSpace(kycData?.LastName) ? string.Empty : kycData.LastName;
 
     private string IssueDateInputValue => issueDateValue?.ToString("yyyy-MM-dd") ?? string.Empty;
 

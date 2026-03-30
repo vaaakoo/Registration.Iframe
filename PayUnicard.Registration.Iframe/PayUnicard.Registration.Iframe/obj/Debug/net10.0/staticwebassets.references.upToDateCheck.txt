@@ -45,3 +45,6 @@ C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\obj\Debug\net10.0\staticwebassets.build.json
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\obj\Debug\net10.0\staticwebassets.build.json
 C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\obj\Debug\net10.0\staticwebassets.build.json
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\obj\Debug\net10.0\staticwebassets.build.json
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\obj\Debug\net10.0\staticwebassets.build.json
+C:\Users\v.Janikashvili\Desktop\IFRAME\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe\PayUnicard.Registration.Iframe.Client\obj\Debug\net10.0\staticwebassets.build.json

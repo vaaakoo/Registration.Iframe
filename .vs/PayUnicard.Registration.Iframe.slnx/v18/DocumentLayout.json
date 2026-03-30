@@ -3,8 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{EB2FEF7D-24EB-86A3-6C6C-85A2ADE243EC}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj|c:\\users\\v.janikashvili\\desktop\\iframe\\payunicard.registration.iframe\\payunicard.registration.iframe\\payunicard.registration.iframe\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{EB2FEF7D-24EB-86A3-6C6C-85A2ADE243EC}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj|solutionrelative:payunicard.registration.iframe\\payunicard.registration.iframe\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{EB2FEF7D-24EB-86A3-6C6C-85A2ADE243EC}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj|c:\\users\\v.janikashvili\\desktop\\iframe\\payunicard.registration.iframe\\payunicard.registration.iframe\\payunicard.registration.iframe\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{EB2FEF7D-24EB-86A3-6C6C-85A2ADE243EC}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.csproj|solutionrelative:payunicard.registration.iframe\\payunicard.registration.iframe\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56E41585-D16A-B0F8-28AB-644BA8C07E48}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\PayUnicard.Registration.Iframe.Client.csproj|c:\\users\\v.janikashvili\\desktop\\iframe\\payunicard.registration.iframe\\payunicard.registration.iframe\\payunicard.registration.iframe.client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{56E41585-D16A-B0F8-28AB-644BA8C07E48}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\PayUnicard.Registration.Iframe.Client.csproj|solutionrelative:payunicard.registration.iframe\\payunicard.registration.iframe.client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{56E41585-D16A-B0F8-28AB-644BA8C07E48}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\PayUnicard.Registration.Iframe.Client.csproj|c:\\users\\v.janikashvili\\desktop\\iframe\\payunicard.registration.iframe\\payunicard.registration.iframe\\payunicard.registration.iframe.client\\pages\\identificationwizard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{56E41585-D16A-B0F8-28AB-644BA8C07E48}|PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\PayUnicard.Registration.Iframe.Client.csproj|solutionrelative:payunicard.registration.iframe\\payunicard.registration.iframe.client\\pages\\identificationwizard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -27,14 +35,40 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "App.razor",
-              "DocumentMoniker": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Components\\App.razor",
-              "RelativeDocumentMoniker": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Components\\App.razor",
-              "ToolTip": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Components\\App.razor",
-              "RelativeToolTip": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Components\\App.razor",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAuwBcAAAAAAAAAAAAAAA==",
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Program.cs",
+              "RelativeDocumentMoniker": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Program.cs",
+              "ToolTip": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Program.cs",
+              "RelativeToolTip": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\Program.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAAwA4AAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-30T14:33:46.706Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Program.cs",
+              "RelativeDocumentMoniker": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Program.cs",
+              "ToolTip": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Program.cs",
+              "RelativeToolTip": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Program.cs",
+              "ViewState": "AgIAABQAAAAAAAAAAIAwwB4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-30T12:53:34.014Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IdentificationWizard.razor",
+              "DocumentMoniker": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Pages\\IdentificationWizard.razor",
+              "RelativeDocumentMoniker": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Pages\\IdentificationWizard.razor",
+              "ToolTip": "C:\\Users\\v.Janikashvili\\Desktop\\IFRAME\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Pages\\IdentificationWizard.razor",
+              "RelativeToolTip": "PayUnicard.Registration.Iframe\\PayUnicard.Registration.Iframe.Client\\Pages\\IdentificationWizard.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-27T18:14:03.827Z",
+              "WhenOpened": "2026-03-30T12:53:22.58Z",
               "EditorCaption": ""
             }
           ]

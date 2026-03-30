@@ -1,0 +1,36 @@
+@page "/mock-kyc"
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveWebAssembly
+
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f7f9fa; font-family: Inter, sans-serif;">
+    <div style="text-align: center; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+        <h2 style="color: #6d28d9; margin-bottom: 1rem;">Simulating KYC Identity Verification</h2>
+        <p style="color: #64748b; margin-bottom: 2rem;">Please wait while we automatically verify your documents...</p>
+        
+        <div style="display: flex; justify-content: center; gap: 8px;">
+            <div class="loader-dot" style="animation-delay: 0s;"></div>
+            <div class="loader-dot" style="animation-delay: 0.2s;"></div>
+            <div class="loader-dot" style="animation-delay: 0.4s;"></div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Simulate 3 seconds of user doing KYC
+            await Task.Delay(3000);
+            
+            // Post message to parent window (the IdentificationWizard hosting this iframe)
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                window.parent.postMessage(JSON.stringify({ eventName: 'KYC_COMPLETED' }), '*');
+                // Also trigger 'DONE' as a fallback since production docs mentioned it
+                window.parent.postMessage('DONE', '*');
+            ");
+        }
+    }
+}

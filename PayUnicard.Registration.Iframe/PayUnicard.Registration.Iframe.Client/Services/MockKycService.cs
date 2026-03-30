@@ -13,7 +13,7 @@ public class MockKycService : IKycService
     {
         return Task.FromResult<OpenSessionResponse?>(new OpenSessionResponse 
         { 
-            FrameUrl = "https://demo.kvalifika.com",
+            FrameUrl = "/mock-kyc", // Redirect to internal page for mock iframe simulation
             SessionId = "mock-session-id",
             SkipKycSession = false
         });

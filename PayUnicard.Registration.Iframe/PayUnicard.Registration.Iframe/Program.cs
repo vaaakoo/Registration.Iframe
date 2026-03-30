@@ -14,14 +14,30 @@ builder.Services.Configure<IframeOptions>(builder.Configuration.GetSection("Ifra
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IOtpService, OtpService>();
-builder.Services.AddScoped<IKycService, KycService>();
-builder.Services.AddScoped<IPresentationService, PresentationService>();
+var appSection = builder.Configuration.GetSection("App");
+var useMockServices = true;
+if (appSection.Exists() && appSection.GetChildren().Any(x => x.Key == "UseMockServices"))
+{
+    useMockServices = appSection.GetValue<bool>("UseMockServices");
+}
+
+if (useMockServices)
+{
+    builder.Services.AddScoped<IUserService, MockUserService>();
+    builder.Services.AddScoped<IKycService, MockKycService>();
+    builder.Services.AddScoped<IReferenceDataService, MockReferenceDataService>();
+}
+else
+{
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IKycService, KycService>();
+    builder.Services.AddScoped<IReferenceDataService, ReferenceDataService>();
+}
+
 builder.Services.AddScoped<IAppEnvironmentService, AppEnvironmentService>();
 builder.Services.AddScoped<IIframeInteropService, IframeInteropService>();
 builder.Services.AddScoped<IMockModeService, MockModeService>();
-builder.Services.AddScoped<RegistrationState>();
+builder.Services.AddScoped<PayUnicard.Registration.Iframe.Client.Services.RegistrationState>();
 
 var walletApiOptions = builder.Configuration.GetSection("WalletApi").Get<WalletApiOptions>() ?? new WalletApiOptions();
 builder.Services.AddScoped(_ => new HttpClient

@@ -1,0 +1,310 @@
+# Iframe Flow (Production)
+
+This document describes the production iframe flow: which page routes are hit, which backend/CMS endpoints are called at each step, and how those steps map to the UI screens (as shown in your screenshots). It is based on the current code paths in this repo.
+
+## Base URLs and Environment
+
+These are configured via environment variables in production:
+
+- `NEXT_PUBLIC_API_BASE_URL`: Core API base (used by `axiosInstance`)
+- `NEXT_PUBLIC_CMS_BASE_URL`: CMS base (used by `cmsInstance`)
+- `NEXT_PUBLIC_IDENTITY_AUTHORITY`: OIDC authority (identity server)
+- `NEXT_PUBLIC_IDENTITY_CLIENT_ID`: OIDC client id
+- `NEXT_PUBLIC_ENVIRONMENT`: Environment switch used for logo / branding
+
+## Iframe Entry URLs
+
+All iframe routes are locale‑prefixed:
+
+- `/{locale}/iframe/login`
+- `/{locale}/iframe/check-kyc`
+- `/{locale}/iframe/identification`
+- `/{locale}/iframe/order-card`
+
+## Step‑By‑Step Flow
+
+### Step 0: Page Bootstrap (All Iframe Pages)
+
+Each iframe page prefetches translations and (for most pages) build content.
+
+CMS calls:
+
+- `GET {CMS}/build-env`  
+  Source: `src/features/Landing/api/buildContent.ts`
+
+Some pages also prefetch:
+
+- `GET {CMS}/landing-page?populate=deep&locale={locale}`  
+  Source: `src/features/Landing/api/landingContent.ts`
+- `GET {CMS}/card-ordering?populate=deep&locale={locale}`  
+  Source: `src/features/Landing/api/cardOrderingContent.ts`
+
+### Step 1: Iframe Login
+
+Route:
+
+- `/{locale}/iframe/login` (`src/pages/iframe/login.tsx`)
+
+Behavior:
+
+- Initializes OIDC client (`initUserManager` in `src/application/auth/helpers.ts`).
+- Redirects to the identity provider for login.
+
+OIDC settings:
+
+- `authority`: `NEXT_PUBLIC_IDENTITY_AUTHORITY`
+- `client_id`: `NEXT_PUBLIC_IDENTITY_CLIENT_ID`
+- `redirect_uri`: `/{locale}/iframe/check-kyc`
+- `scope`: `openid Wallet_Api.Full offline_access Wallet_Api`
+
+### Step 2: Check KYC
+
+Route:
+
+- `/{locale}/iframe/check-kyc` (`src/pages/iframe/check-kyc.tsx`)
+
+Backend call:
+
+- `GET {API}/api/v2/User/GetUserDetailsV2`  
+  Source: `src/features/Dashboard/api/useGetUserDetails.ts`
+
+Decision:
+
+- If `documentVerificationStatusCode` is verified (or re‑identification), redirect to `/iframe/order-card`.
+- Otherwise, redirect to `/iframe/identification`.
+
+### Step 3: Identification + KYC
+
+Route:
+
+- `/{locale}/iframe/identification` (`src/pages/iframe/identification.tsx`)
+
+High‑level flow:
+
+1. User completes forms (legal/factual address, employment, relationship with bank).
+2. App opens KYC session (Identomat iframe).
+3. User completes KYC.
+4. App finishes registration and sets verification status.
+
+Backend calls (KYC/session):
+
+- `GET {API}/api/v2/Kyc/CheckSessionLimitWeb`
+- `GET {API}/api/v2/Kyc/OpenSession`
+- `GET {API}/api/v2/Kyc/GetSessionData`
+- `GET {API}/api/v2/Kyc/CloseSession`
+
+Backend calls (registration data):
+
+- `POST {API}/api/v2/User/Registration/CustomerRegistration`
+- `POST {API}/api/v2/User/FinishCustomerRegistration`
+- `POST {API}/api/v2/User/ChangeCustomer` (only for non‑Georgia citizenship)
+
+Supporting data:
+
+- `GET {API}/api/v2/GetCitizenshipCountries`
+- `GET {API}/api/v2/User/GetCustomerWorkTypes`
+- `GET {API}/api/v2/User/GetCustomerEmploymentStatusTypes`
+- `GET {API}/api/v2/GetExpectedTransactionTypes`
+- `GET {API}/api/v2/User/GetCustomerAnnualIncomeTypes`
+- `GET {API}/api/v2/User/GetCustomerUsagePurpose`
+
+Notes:
+
+- Identomat iframe is rendered via `src/features/Identification/components/Identification/index.tsx`.
+- The iframe posts `DONE` from `https://widget.identomat.com`, triggering `CloseSession`.
+
+### Step 4: Order Card (Iframe)
+
+Route:
+
+- `/{locale}/iframe/order-card` (`src/pages/iframe/order-card.tsx`)
+
+CMS content:
+
+- `GET {CMS}/card-ordering?populate=deep&locale={locale}`
+
+Core API calls:
+
+- `GET {API}/api/v2/Getcards` (digital card designs)
+- `GET {API}/api/v2/User/GetAccountBalanceByccy` (accounts + currencies)
+- `GET {API}/api/v2/GetPackageTypes` (tariffs)
+- `GET {API}/api/v2/GetCities` (delivery cities)
+- `GET {API}/api/v2/Card/GetCardOrderingTariffAmount` (tariff price)
+- `POST {API}/api/v2/User/CustomerPackageRegistration` (final submit)
+
+UI entry:
+
+- `src/features/OrderCard/index.tsx`  
+  Steps inside are `CardLanding → TypeAndDesign → ChooseTariff → CardDelivery → Confirm`.
+
+## Related Registration (Non‑iframe)
+
+If you need the standard web registration (non‑iframe), it is:
+
+- Route: `/{locale}/register` (`src/pages/register.tsx`)
+- API: `POST {API}/api/v2/User/UserPreRegistration` (`src/features/Register/api/register.ts`)
+
+## Debugging Notes
+
+- Auth and API are required in production.
+- In local development, setting `NEXT_PUBLIC_SKIP_AUTH="true"` turns on MSW mocks (see `src/mocks/handlers.ts`).
+
+## UI Screens Mapping (From Your Screenshots)
+
+Below is a concise, user‑facing mapping of each UI step to route and API calls. This is intended for non‑technical readers.
+
+### Screen A: Start Identification
+
+What the user sees:
+- Start screen with the PayUnicard logo and a single button to proceed.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- `GET {API}/api/v2/User/GetUserDetailsV2` (already cached from Step 2)
+- `GET {API}/api/v2/Kyc/CheckSessionLimitWeb`
+- `GET {API}/api/v2/Kyc/OpenSession`
+
+Outcome:
+- Opens Identomat KYC session (iframe) or continues directly if KYC is skipped.
+
+### Screen B: Identomat KYC (Iframe)
+
+What the user sees:
+- Embedded Identomat iframe and session steps (selfie, document scans).
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- `GET {API}/api/v2/Kyc/GetSessionData`
+- `GET {API}/api/v2/Kyc/CloseSession` (when Identomat sends `DONE`)
+
+Outcome:
+- Collects identity data and returns it to the app.
+
+### Screen C: Additional Data
+
+What the user sees:
+- Citizenship, purpose of account, gender, etc.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- `GET {API}/api/v2/GetCitizenshipCountries`
+- `GET {API}/api/v2/User/GetCustomerUsagePurpose`
+- `GET {API}/api/v2/GetExpectedTransactionTypes`
+- `GET {API}/api/v2/User/GetCustomerAnnualIncomeTypes`
+
+Outcome:
+- User fills required compliance info.
+
+### Screen D: Document Details
+
+What the user sees:
+- Document number, personal ID, issue date, expiration date, issuing country.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- Data is derived from Identomat session where available.
+- Additional fields are collected before final submission.
+
+Outcome:
+- Completes document verification data.
+
+### Screen E: Terms / Consent
+
+What the user sees:
+- Long agreement text, checkbox, and continue button.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- No backend call until user submits.
+
+Outcome:
+- User consents to processing.
+
+### Screen F: Employment / Income
+
+What the user sees:
+- Employment status, profession, position, income inputs.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- `GET {API}/api/v2/User/GetCustomerWorkTypes`
+- `GET {API}/api/v2/User/GetCustomerEmploymentStatusTypes`
+
+Outcome:
+- Employment data is captured for compliance.
+
+### Screen G: Address (Legal + Factual)
+
+What the user sees:
+- Legal address form; checkbox for “same as factual”.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- No additional endpoint at this step.
+
+Outcome:
+- Address data captured for KYC.
+
+### Screen H: Relationship With Bank
+
+What the user sees:
+- “Expected transaction types” checkboxes (Salary, Freelance, Business, Investment).
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- `GET {API}/api/v2/GetExpectedTransactionTypes`
+
+Outcome:
+- Final compliance data entry.
+
+### Screen I: Final Submission (Identification)
+
+What the user sees:
+- A final “submit / continue” action.
+
+Route:
+- `/{locale}/iframe/identification`
+
+Calls:
+- `POST {API}/api/v2/User/Registration/CustomerRegistration`
+- `POST {API}/api/v2/User/FinishCustomerRegistration`
+- `POST {API}/api/v2/User/ChangeCustomer` (non‑Georgia only)
+
+Outcome:
+- Verification status is updated, then flow continues.
+
+### Screen J: Order Card (Iframe)
+
+What the user sees:
+- Card ordering UI (WhiteBIT card in iframe mode).
+
+Route:
+- `/{locale}/iframe/order-card`
+
+Calls:
+- `GET {CMS}/card-ordering?populate=deep&locale={locale}`
+- `GET {API}/api/v2/Getcards`
+- `GET {API}/api/v2/User/GetAccountBalanceByccy`
+- `GET {API}/api/v2/GetPackageTypes`
+- `GET {API}/api/v2/GetCities`
+- `GET {API}/api/v2/Card/GetCardOrderingTariffAmount`
+- `POST {API}/api/v2/User/CustomerPackageRegistration`
+
+Outcome:
+- Card package is registered and order is placed.

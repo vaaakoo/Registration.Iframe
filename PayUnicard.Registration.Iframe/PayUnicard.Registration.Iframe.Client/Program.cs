@@ -20,19 +20,25 @@ builder.Services.AddScoped(_ => new HttpClient
     BaseAddress = new Uri(walletApiOptions.BaseUrl)
 });
 
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<OtpService>();
-builder.Services.AddScoped<KycService>();
-builder.Services.AddScoped<PresentationService>();
-builder.Services.AddScoped<MockUserService>();
-builder.Services.AddScoped<MockOtpService>();
-builder.Services.AddScoped<MockKycService>();
-builder.Services.AddScoped<MockPresentationService>();
+var appSection = builder.Configuration.GetSection("App");
+var useMockServices = true; // Default to mock
+if (appSection.Exists() && appSection.GetChildren().Any(x => x.Key == "UseMockServices"))
+{
+    useMockServices = appSection.GetValue<bool>("UseMockServices");
+}
 
-builder.Services.AddScoped<IUserService, UserServiceRouter>();
-builder.Services.AddScoped<IOtpService, OtpServiceRouter>();
-builder.Services.AddScoped<IKycService, KycServiceRouter>();
-builder.Services.AddScoped<IPresentationService, PresentationServiceRouter>();
+if (useMockServices)
+{
+    builder.Services.AddScoped<IUserService, MockUserService>();
+    builder.Services.AddScoped<IKycService, MockKycService>();
+    builder.Services.AddScoped<IReferenceDataService, MockReferenceDataService>();
+}
+else
+{
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IKycService, KycService>();
+    builder.Services.AddScoped<IReferenceDataService, ReferenceDataService>();
+}
 
 builder.Services.AddScoped<PayUnicard.Registration.Iframe.Client.Services.RegistrationState>();
 builder.Services.AddBlazoredLocalStorage();
